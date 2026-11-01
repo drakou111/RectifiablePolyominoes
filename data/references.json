@@ -1,0 +1,116 @@
+{
+  "dahlke-gun": {
+    "authors": ["Karl Dahlke"],
+    "title": "The Gun Theorem",
+    "venue": "manuscript in the trec repository",
+    "url": "https://github.com/eklhad/trec/blob/master/theorems/gun",
+    "checked": true
+  },
+  "dahlke-trec": {
+    "authors": ["Karl Dahlke"],
+    "title": "trec: tiling rectangles with polyominoes (README, hexadecimal piece notation)",
+    "venue": "software repository",
+    "url": "https://github.com/eklhad/trec",
+    "checked": true
+  },
+  "golomb-1966": {
+    "authors": ["Solomon W. Golomb"],
+    "title": "Tiling with polyominoes",
+    "year": 1966,
+    "venue": "Journal of Combinatorial Theory",
+    "volume": "1",
+    "pages": "280-296",
+    "url": "https://scholar.google.com/scholar?q=%22Tiling+with+polyominoes%22+Golomb+1966",
+    "checked": false
+  },
+  "klarner-1969": {
+    "authors": ["David A. Klarner"],
+    "title": "Packing a rectangle with congruent N-ominoes",
+    "year": 1969,
+    "venue": "Journal of Combinatorial Theory",
+    "volume": "7",
+    "pages": "107-115",
+    "url": "https://scholar.google.com/scholar?q=%22Packing+a+rectangle+with+congruent+N-ominoes%22",
+    "checked": false
+  },
+  "klarner-gobel-1969": {
+    "authors": ["David A. Klarner", "F. Göbel"],
+    "title": "Packing boxes with congruent figures",
+    "year": 1969,
+    "venue": "Indagationes Mathematicae",
+    "volume": "31",
+    "pages": "465-472",
+    "url": "https://scholar.google.com/scholar?q=%22Packing+boxes+with+congruent+figures%22",
+    "checked": false
+  },
+  "debruijn-1969": {
+    "authors": ["N. G. de Bruijn"],
+    "title": "Filling boxes with bricks",
+    "year": 1969,
+    "venue": "American Mathematical Monthly",
+    "volume": "76",
+    "pages": "37-40",
+    "url": "https://scholar.google.com/scholar?q=%22Filling+boxes+with+bricks%22+de+Bruijn",
+    "checked": false
+  },
+  "walkup-1965": {
+    "authors": ["D. W. Walkup"],
+    "title": "Covering a rectangle with T-tetrominoes",
+    "year": 1965,
+    "venue": "American Mathematical Monthly",
+    "volume": "72",
+    "pages": "986-988",
+    "url": "https://scholar.google.com/scholar?q=%22Covering+a+rectangle+with+T-tetrominoes%22",
+    "checked": false
+  },
+  "golomb-1989": {
+    "authors": ["Solomon W. Golomb"],
+    "title": "Polyominoes which tile rectangles",
+    "year": 1989,
+    "venue": "Journal of Combinatorial Theory, Series A",
+    "volume": "51",
+    "pages": "117-124",
+    "url": "https://scholar.google.com/scholar?q=%22Polyominoes+which+tile+rectangles%22+Golomb",
+    "checked": false
+  },
+  "dahlke-1989-y-hexomino": {
+    "authors": ["Karl A. Dahlke"],
+    "title": "The Y-hexomino has order 92",
+    "year": 1989,
+    "venue": "Journal of Combinatorial Theory, Series A",
+    "volume": "51",
+    "pages": "125-126",
+    "url": "https://scholar.google.com/scholar?q=%22The+Y-hexomino+has+order+92%22",
+    "checked": false
+  },
+  "dahlke-1989-heptomino": {
+    "authors": ["Karl A. Dahlke"],
+    "title": "A heptomino of order 76",
+    "year": 1989,
+    "venue": "Journal of Combinatorial Theory, Series A",
+    "volume": "51",
+    "pages": "127-128",
+    "url": "https://scholar.google.com/scholar?q=%22A+heptomino+of+order+76%22",
+    "checked": false
+  },
+  "stewart-wormstein-1992": {
+    "authors": ["Ian N. Stewart", "A. Wormstein"],
+    "title": "Polyominoes of order 3 do not exist",
+    "year": 1992,
+    "venue": "Journal of Combinatorial Theory, Series A",
+    "volume": "61",
+    "pages": "130-136",
+    "url": "https://scholar.google.com/scholar?q=%22Polyominoes+of+order+3+do+not+exist%22",
+    "checked": false
+  },
+  "reid-2005": {
+    "authors": ["Michael Reid"],
+    "title": "Klarner systems and tiling boxes with polyominoes",
+    "year": 2005,
+    "venue": "Journal of Combinatorial Theory, Series A",
+    "volume": "111",
+    "pages": "89-105",
+    "url": "https://scholar.google.com/scholar?q=%22Klarner+systems+and+tiling+boxes+with+polyominoes%22",
+    "checked": false
+  }
+}

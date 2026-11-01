@@ -1,0 +1,13 @@
+{
+  "id": "fe70",
+  "names": ["fe70", "gun B(1.2^3.1^3)"],
+  "note": "The one width-2 polyomino whose rectangle-tiling status Dahlke's Gun Theorem leaves unresolved.",
+  "properties": {
+    "rectifiable": {
+      "status": "open",
+      "ref": "dahlke-gun",
+      "refDetail": "section 26",
+      "note": "Dahlke reports testing rectangles up to width 85 without finding a tiling or a proof of untilability."
+    }
+  }
+}
