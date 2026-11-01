@@ -1,0 +1,55 @@
+<p>
+  A polyomino is <em>rectifiable</em> if copies of it, rotated and reflected as
+  needed, tile some rectangle without overlap. Its <em>order</em> is the fewest
+  copies that tile a rectangle. The concept goes back to Klarner (<a
+    data-ref="klarner-1969"
+  ></a
+  >); see also Golomb (<a data-ref="golomb-1989"></a>).
+</p>
+
+<h2>Small orders</h2>
+<ul>
+  <li>
+    Order 1: the polyomino is itself a rectangle. The catalogue fills these in
+    automatically.
+  </li>
+  <li>Order 2: two copies form a rectangle.</li>
+  <li>
+    Order 3 does not occur: no polyomino has order 3 (Stewart and Wormstein,
+    <a data-ref="stewart-wormstein-1992"></a>).
+  </li>
+  <li>
+    Large orders exist. Dahlke showed that the Y-hexomino
+    <a data-poly="f840"></a> has order 92 (<a
+      data-ref="dahlke-1989-y-hexomino"
+    ></a
+    >) and that the heptomino <a data-poly="f860"></a> has order 76 (<a
+      data-ref="dahlke-1989-heptomino"
+    ></a
+    >).
+  </li>
+</ul>
+
+<h2>Odd order</h2>
+<p>
+  The <em>odd order</em> is the fewest copies, odd in number, that tile a
+  rectangle. For many pieces every rectangle tiling uses an even number of
+  copies, and then the odd order is recorded as "none". When the order itself is
+  odd, the two numbers agree.
+</p>
+
+<h2>Smallest rectangles and squares</h2>
+<p>
+  The <em>smallest rectangles</em> are the tileable rectangles of least area.
+  Their area is the order times the number of cells, and the data checker
+  enforces this. There may be several of them, of different shapes. The
+  <em>smallest square</em> is the side of the smallest tileable square, or
+  "none" if no square can be tiled.
+</p>
+
+<h2>Bounds</h2>
+<p>
+  While a value is open, the catalogue records the bounds known: for example, a
+  lower bound on the order from an exhaustive search, or an upper bound from a
+  known tiling.
+</p>

@@ -1,0 +1,92 @@
+<p>
+  All data is hand-entered JSON in the <code>data/</code> folder of the site's
+  repository. A checker runs with the tests (<code>npm test</code>) and the
+  build stops on any error.
+</p>
+
+<h2>Polyomino entries</h2>
+<p>
+  One file per polyomino at
+  <code>data/polyominoes/&lt;cells&gt;/&lt;id&gt;.json</code>, where the ID is
+  canonical (see <a href="#/guide/notation">Notation</a>):
+</p>
+<pre>
+{
+  "id": "fe70",
+  "names": ["fe70", "gun B(1.2^3.1^3)"],
+  "note": "Optional free text.",
+  "properties": {
+    "rectifiable": { "status": "open", "ref": "dahlke-gun", "refDetail": "section 26" },
+    "order": { "status": "open", "lower": 100 }
+  }
+}
+</pre>
+<p>Every property record has:</p>
+<ul>
+  <li>
+    <code>status</code>: <code>proven</code> (published proof),
+    <code>computed</code> (computer search), or <code>open</code>.
+  </li>
+  <li><code>value</code>: required unless open, forbidden when open.</li>
+  <li><code>lower</code>, <code>upper</code>: optional bounds.</li>
+  <li>
+    <code>ref</code>: a key in <code>data/references.json</code>, the first
+    publication of the result. Required unless open.
+  </li>
+  <li>
+    <code>refDetail</code>, <code>reason</code>, <code>note</code>: optional
+    text.
+  </li>
+</ul>
+<p>Property keys and value types:</p>
+<ul>
+  <li><code>rectifiable</code>, <code>tilesPlane</code>: true or false.</li>
+  <li>
+    <code>order</code>: a positive integer. <code>oddOrder</code>: an odd
+    integer or <code>"none"</code>.
+  </li>
+  <li>
+    <code>smallestRectangles</code>: a list of <code>[width, height]</code>.
+  </li>
+  <li><code>smallestSquare</code>: a side length or <code>"none"</code>.</li>
+  <li>
+    <code>primeRectangles</code>:
+    <code>{ "rectangles": [[w, h], ...], "complete": true }</code>.
+  </li>
+  <li><code>minColors</code>: 1 to 4.</li>
+</ul>
+
+<h2>Tilings</h2>
+<p>
+  One file per tiling at
+  <code>data/tilings/&lt;id&gt;/&lt;width&gt;x&lt;height&gt;.json</code>. Add a
+  suffix such as <code>-2</code> or <code>-odd</code> to store several tilings
+  of the same size. Each placement is an orientation and the top-left corner of
+  that orientation's bounding box:
+</p>
+<pre>
+{
+  "width": 4,
+  "height": 2,
+  "ref": "some-paper",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 2, "x": 1, "y": 0 }
+  ]
+}
+</pre>
+<p>
+  The checker places every copy and rejects overlaps, gaps and copies sticking
+  out. It also cross-checks the tiling against the entry: no fewer copies than
+  the order, no odd count below the odd order, and no tiling that uses fewer
+  colors than the recorded fewest colors.
+</p>
+
+<h2>References</h2>
+<p>
+  <code>data/references.json</code> maps keys to <code>authors</code>,
+  <code>title</code>, and optionally <code>year</code>, <code>venue</code>,
+  <code>volume</code>, <code>pages</code>, plus a <code>doi</code> or
+  <code>url</code>. Set <code>checked</code> to true once the details are
+  verified against the source.
+</p>

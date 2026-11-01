@@ -1,0 +1,293 @@
+:root {
+  --bg: #ffffff;
+  --surface: #f4f4f2;
+  --fg: #1d1d1f;
+  --muted: #666;
+  --line: #d6d6d6;
+  --accent: #1f5fae;
+  --shape: #9cb8d9;
+  --proven: #2e7d32;
+  --computed: #1f5fae;
+  --open: #b26a00;
+  --error: #b3261e;
+  --tile-border: #1d1d1f;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17181a;
+    --surface: #222326;
+    --fg: #e6e6e6;
+    --muted: #9a9a9a;
+    --line: #3a3b3e;
+    --accent: #7fb0f0;
+    --shape: #4d6f99;
+    --proven: #7cc57f;
+    --computed: #7fb0f0;
+    --open: #e9a94b;
+    --error: #f0857d;
+    --tile-border: #101012;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    16px/1.5 system-ui,
+    sans-serif;
+}
+
+header {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.6rem 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+}
+
+nav .site-name {
+  font-weight: 700;
+  margin-right: auto;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 16px 3rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+code,
+pre {
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+pre {
+  background: var(--surface);
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.error {
+  color: var(--error);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  font-weight: 600;
+}
+
+.numeric {
+  text-align: right;
+}
+
+.catalogue,
+.properties {
+  display: block;
+  overflow-x: auto;
+}
+
+.catalogue td.thumb {
+  width: 90px;
+}
+
+td.status-open {
+  color: var(--open);
+  font-style: italic;
+}
+
+td.unknown {
+  color: var(--muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 0.45em;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font-size: 0.8em;
+}
+
+.badge.status-proven {
+  color: var(--proven);
+}
+
+.badge.status-computed {
+  color: var(--computed);
+}
+
+.badge.status-open {
+  color: var(--open);
+}
+
+.badge.unchecked {
+  color: var(--muted);
+  margin-left: 0.5em;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.8rem;
+  margin-bottom: 1rem;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
+/* Polyomino and tiling drawings: the viewBox is in cell units, so strokes must not scale. */
+svg.shape,
+svg.tiling {
+  display: block;
+  height: auto;
+}
+
+svg.thumbnail {
+  width: 80px;
+  max-height: 60px;
+}
+
+svg.large {
+  width: 220px;
+  max-height: 220px;
+}
+
+svg.orientation {
+  width: 90px;
+  max-height: 90px;
+}
+
+svg.tiling {
+  width: 100%;
+  max-width: 900px;
+  max-height: 85vh;
+}
+
+.shape-fill {
+  fill: var(--shape);
+}
+
+.piece-border {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1.6px;
+  stroke-linecap: square;
+  vector-effect: non-scaling-stroke;
+}
+
+svg.tiling .piece-border {
+  stroke: var(--tile-border);
+}
+
+svg.tiling.outline .piece-border {
+  stroke: var(--fg);
+}
+
+.cell-line {
+  fill: none;
+  stroke: var(--fg);
+  stroke-opacity: 0.18;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.shape-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.shape-header dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 1rem;
+  margin: 0;
+}
+
+.shape-header dt {
+  font-weight: 600;
+}
+
+.shape-header dd {
+  margin: 0;
+}
+
+.properties th[scope="row"] {
+  white-space: nowrap;
+}
+
+.orientations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.orientations figure {
+  margin: 0;
+}
+
+figcaption {
+  text-align: center;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.85em;
+}
+
+details {
+  margin: 1.5rem 0;
+}
+
+summary {
+  cursor: pointer;
+}
+
+.references li {
+  margin-bottom: 0.7rem;
+}
+
+.references li.highlight {
+  background: var(--surface);
+  outline: 2px solid var(--accent);
+}
+
+.guide {
+  max-width: 50rem;
+}

@@ -1,0 +1,24 @@
+<p>
+  If two rectangles of the same height can each be tiled by a polyomino, so can
+  the rectangle formed by placing them side by side. A tileable rectangle is
+  <em>prime</em> if it cannot be cut by a straight line into two smaller
+  tileable rectangles. Every tileable rectangle is built from prime ones, so the
+  list of prime rectangles describes the full set of tileable rectangles.
+</p>
+<p>
+  The set of prime rectangles of any polyomino is finite. This follows from
+  results of Klarner and G&ouml;bel (<a data-ref="klarner-gobel-1969"></a>);
+  Reid develops the theory of such systems and computes prime rectangles for
+  many pieces (<a data-ref="reid-2005"></a>).
+</p>
+<p>
+  For rectangular bricks the answer is classical. An <var>m</var> &times;
+  <var>n</var> rectangle can be tiled by <var>a</var> &times;
+  <var>b</var> bricks only if both <var>a</var> and <var>b</var> divide
+  <var>m</var> or <var>n</var>; see de Bruijn (<a data-ref="debruijn-1969"></a>)
+  and Klarner and G&ouml;bel.
+</p>
+<p>
+  The catalogue stores the prime rectangles as a list, with a flag saying
+  whether the list is known to be complete.
+</p>

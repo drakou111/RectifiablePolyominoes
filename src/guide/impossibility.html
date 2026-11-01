@@ -1,0 +1,44 @@
+<p>
+  A tiling is its own certificate, but showing that <em>no</em> rectangle can be
+  tiled needs an argument. These are the main kinds the catalogue cites in the
+  <em>reason</em> field.
+</p>
+
+<h2>Holes</h2>
+<p>
+  A copy cannot cross the piece, so a hole could only be filled by whole copies
+  lying inside it, and a copy is too large to fit inside its own hole.
+  Polyominoes with holes therefore tile no rectangle (and not the plane). The
+  catalogue derives this automatically.
+</p>
+
+<h2>Corners and boundaries</h2>
+<p>
+  Each corner of a rectangle must be covered by a copy that fits there. If no
+  orientation fits, or every way of filling a corner forces a configuration that
+  cannot continue along the sides, the piece is not rectifiable. Dahlke's
+  analysis of width-2 pieces opens with exactly this check (<a
+    data-ref="dahlke-gun"
+    >Dahlke, The Gun Theorem, section 1</a
+  >), and its later sections follow forced placements along the walls.
+</p>
+
+<h2>Coloring and counting</h2>
+<p>
+  Color the cells of the rectangle (by a checkerboard, by stripes, or with
+  weights) so that every copy covers a constrained amount of each color, then
+  compare with the rectangle's totals. The classic example is Walkup's proof
+  that a rectangle tiled by T-tetrominoes uses a number of copies divisible by 4
+  (<a data-ref="walkup-1965"></a>). Such arguments constrain the order and the
+  odd order even when they do not rule out rectangles altogether.
+</p>
+
+<h2>Computer search</h2>
+<p>
+  Exhaustive search can show that no rectangle of a given width can be tiled,
+  whatever its height, by exploring the finite set of boundary states of a strip
+  of that width. This gives lower bounds such as "no rectangle with a side of at
+  most
+  <var>w</var>". It settles the question only when combined with an argument
+  covering all widths.
+</p>

@@ -1,0 +1,50 @@
+<p>
+  A <em>polyomino</em> is a finite set of unit squares of the grid, connected
+  through shared edges. The catalogue treats polyominoes as <em>free</em>: two
+  shapes that differ by a rotation or a reflection are the same polyomino, and
+  every tiling may use all eight orientations.
+</p>
+
+<h2>IDs</h2>
+<p>
+  Each polyomino is named by a hexadecimal string, following the notation of
+  Karl Dahlke (<a data-ref="dahlke-trec"></a>). Draw the shape in rows. Each row
+  is one byte: the leftmost cell is the most significant bit, a 1 is a cell and
+  a 0 is a gap. The bytes are written top to bottom, two hex digits each.
+</p>
+<pre>
+#######.   fe
+.###....   70      ->  fe70
+</pre>
+<p>
+  Dahlke's notation does not fix which of the eight orientations to write. The
+  catalogue makes it canonical: among the orientations with the fewest rows,
+  take the one whose hex string is largest. This reproduces Dahlke's own names,
+  such as <a data-poly="f840"></a> (the Y-hexomino),
+  <a data-poly="f860"></a> and <a data-poly="fe70"></a>.
+</p>
+<p>
+  A row longer than 8 cells needs more than one byte. Such shapes are written
+  with a leading <code>x</code>, every row padded to the same number of bytes,
+  and rows separated by dots. The straight 10-omino is <code>xffc0</code>, and
+  an L with a 9-cell arm is <code>xff80.8000</code>.
+</p>
+
+<h2>Orientations</h2>
+<p>
+  Orientation <var>o</var> (0 to 7) turns the shape as drawn by its ID clockwise
+  by 90 &times; (<var>o</var> mod 4) degrees, then mirrors it left to right if
+  <var>o</var> &ge; 4. Coordinates grow rightward (<var>x</var>) and downward
+  (<var>y</var>). Each polyomino page shows all eight orientations with their
+  numbers.
+</p>
+
+<h2>Symmetry groups</h2>
+<p>
+  The symmetry column names the subgroup of the square's symmetries that maps
+  the shape onto itself: D4 (all eight), C4 (quarter turns only), D2 (two mirror
+  axes parallel to the grid), D2 diagonal, C2 (half turn only), D1 (one mirror
+  axis parallel to the grid), D1 diagonal, and C1 (none). A shape with symmetry
+  group of size <var>k</var> has 8 / <var>k</var>
+  distinct orientations.
+</p>

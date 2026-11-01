@@ -1,0 +1,23 @@
+<p>
+  Color each copy in a rectangle tiling so that copies sharing an edge (not just
+  a corner) get different colors. The fewest colors that work is the chromatic
+  number of the tiling's adjacency graph. The catalogue's
+  <em>fewest colors</em> property is the minimum of this number over all
+  rectangle tilings of the polyomino.
+</p>
+<p>
+  The adjacency graph of a tiling is planar, so four colors always suffice by
+  the four color theorem. Rectangles need one color (a single copy), and order-2
+  pieces need two. For most other rectifiable pieces the answer is 3 or 4, and
+  deciding between them can mean finding a special tiling, or proving that every
+  tiling contains an obstruction such as an odd wheel (a copy surrounded by an
+  odd cycle of neighbors).
+</p>
+<p>
+  On each polyomino page, the "fewest colors" coloring mode colors the displayed
+  tiling with as few colors as possible, using an exact backtracking search. The
+  page says whether the count shown is exact for that tiling, or only an upper
+  bound because the search was cut short. The data checker rejects an entry
+  whose recorded fewest colors is larger than what one of its own tilings
+  achieves.
+</p>
