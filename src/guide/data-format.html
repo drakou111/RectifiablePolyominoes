@@ -15,12 +15,17 @@
   "id": "fe70",
   "names": ["fe70", "gun B(1.2^3.1^3)"],
   "note": "Optional free text.",
+  "seeAlso": ["tulleken-2019", "fe70-org"],
   "properties": {
     "rectifiable": { "status": "open", "ref": "dahlke-gun", "refDetail": "section 26" },
     "order": { "status": "open", "lower": 100 }
   }
 }
 </pre>
+<p>
+  <code>seeAlso</code> lists reference keys for sources that discuss the piece
+  without being the first publication of one of its results.
+</p>
 <p>Every property record has:</p>
 <ul>
   <li>
@@ -84,9 +89,11 @@
 
 <h2>References</h2>
 <p>
-  <code>data/references.json</code> maps keys to <code>authors</code>,
-  <code>title</code>, and optionally <code>year</code>, <code>venue</code>,
-  <code>volume</code>, <code>pages</code>, plus a <code>doi</code> or
-  <code>url</code>. Set <code>checked</code> to true once the details are
-  verified against the source.
+  <code>data/references.json</code> maps keys to <code>kind</code> (<code
+    >publication</code
+  >
+  or <code>website</code>), <code>authors</code>, <code>title</code>, and
+  optionally <code>year</code>, <code>venue</code>, <code>volume</code>,
+  <code>pages</code>, plus a <code>doi</code> or <code>url</code>. Set
+  <code>checked</code> to true once the details are verified against the source.
 </p>

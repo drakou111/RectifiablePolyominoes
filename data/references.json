@@ -1,12 +1,14 @@
 {
   "dahlke-gun": {
+    "kind": "publication",
     "authors": ["Karl Dahlke"],
     "title": "The Gun Theorem",
-    "venue": "manuscript in the trec repository",
+    "venue": "unpublished manuscript in the trec repository",
     "url": "https://github.com/eklhad/trec/blob/master/theorems/gun",
     "checked": true
   },
   "dahlke-trec": {
+    "kind": "website",
     "authors": ["Karl Dahlke"],
     "title": "trec: tiling rectangles with polyominoes (README, hexadecimal piece notation)",
     "venue": "software repository",
@@ -14,6 +16,7 @@
     "checked": true
   },
   "golomb-1966": {
+    "kind": "publication",
     "authors": ["Solomon W. Golomb"],
     "title": "Tiling with polyominoes",
     "year": 1966,
@@ -24,6 +27,7 @@
     "checked": false
   },
   "klarner-1969": {
+    "kind": "publication",
     "authors": ["David A. Klarner"],
     "title": "Packing a rectangle with congruent N-ominoes",
     "year": 1969,
@@ -34,6 +38,7 @@
     "checked": false
   },
   "klarner-gobel-1969": {
+    "kind": "publication",
     "authors": ["David A. Klarner", "F. Göbel"],
     "title": "Packing boxes with congruent figures",
     "year": 1969,
@@ -44,6 +49,7 @@
     "checked": false
   },
   "debruijn-1969": {
+    "kind": "publication",
     "authors": ["N. G. de Bruijn"],
     "title": "Filling boxes with bricks",
     "year": 1969,
@@ -54,6 +60,7 @@
     "checked": false
   },
   "walkup-1965": {
+    "kind": "publication",
     "authors": ["D. W. Walkup"],
     "title": "Covering a rectangle with T-tetrominoes",
     "year": 1965,
@@ -64,6 +71,7 @@
     "checked": false
   },
   "golomb-1989": {
+    "kind": "publication",
     "authors": ["Solomon W. Golomb"],
     "title": "Polyominoes which tile rectangles",
     "year": 1989,
@@ -74,6 +82,7 @@
     "checked": false
   },
   "dahlke-1989-y-hexomino": {
+    "kind": "publication",
     "authors": ["Karl A. Dahlke"],
     "title": "The Y-hexomino has order 92",
     "year": 1989,
@@ -84,6 +93,7 @@
     "checked": false
   },
   "dahlke-1989-heptomino": {
+    "kind": "publication",
     "authors": ["Karl A. Dahlke"],
     "title": "A heptomino of order 76",
     "year": 1989,
@@ -94,6 +104,7 @@
     "checked": false
   },
   "stewart-wormstein-1992": {
+    "kind": "publication",
     "authors": ["Ian N. Stewart", "A. Wormstein"],
     "title": "Polyominoes of order 3 do not exist",
     "year": 1992,
@@ -104,6 +115,7 @@
     "checked": false
   },
   "reid-2005": {
+    "kind": "publication",
     "authors": ["Michael Reid"],
     "title": "Klarner systems and tiling boxes with polyominoes",
     "year": 2005,
@@ -112,5 +124,75 @@
     "pages": "89-105",
     "url": "https://scholar.google.com/scholar?q=%22Klarner+systems+and+tiling+boxes+with+polyominoes%22",
     "checked": false
+  },
+  "reid-1997": {
+    "kind": "publication",
+    "authors": ["Michael Reid"],
+    "title": "Tiling rectangles and half strips with congruent polyominoes",
+    "year": 1997,
+    "venue": "Journal of Combinatorial Theory, Series A",
+    "volume": "80",
+    "pages": "106-123",
+    "url": "https://web.archive.org/web/20240416054458/https://cflmath.com/Research/Halfstrip/halfstrip.pdf",
+    "checked": true
+  },
+  "tulleken-2019": {
+    "kind": "publication",
+    "authors": ["Herman Tulleken"],
+    "title": "Polyominoes 2.2: How They Fit Together",
+    "year": 2019,
+    "venue": "self-published book (first published 1 May 2018, version 2.2 of 19 May 2019)",
+    "url": "https://code-spot.co.za/downloads/polyominoes/Polyominoes.pdf",
+    "checked": true
+  },
+  "kamenetsky-cooke-2014": {
+    "kind": "publication",
+    "authors": ["Dmitry Kamenetsky", "Tristrom Cooke"],
+    "title": "Tiling rectangles with holey polyominoes",
+    "year": 2014,
+    "venue": "arXiv:1411.2699 [cs.CG] (v2 2015)",
+    "doi": "10.48550/arXiv.1411.2699",
+    "url": "https://arxiv.org/abs/1411.2699",
+    "checked": true
+  },
+  "dahlke-order-396": {
+    "kind": "website",
+    "authors": ["Karl Dahlke"],
+    "title": "14-omino, Order 396",
+    "venue": "eklhad.net polyomino pages",
+    "url": "https://www.eklhad.net/polyomino/tileokla.html",
+    "checked": true
+  },
+  "reid-11omino-7": {
+    "kind": "website",
+    "authors": ["Michael Reid"],
+    "title": "Rectangle tiling for 11-omino number 7 (rectifiable polyomino data)",
+    "venue": "cflmath.com polyomino pages (archived 2022)",
+    "url": "https://web.archive.org/web/20221015174042/https://www.cflmath.com/Polyomino/11omino7_rect.html",
+    "checked": false
+  },
+  "friedman-orders": {
+    "kind": "website",
+    "authors": ["Erich Friedman"],
+    "title": "Polyomino Orders",
+    "venue": "Math Magic, Stetson University (archived 2010)",
+    "url": "https://web.archive.org/web/20100429001429/http://www2.stetson.edu/~efriedma/order/index.html",
+    "checked": false
+  },
+  "grekov-polyominoes-org": {
+    "kind": "website",
+    "authors": ["Dmitry Grekov"],
+    "title": "Polyomino Tilings",
+    "venue": "polyominoes.org (last updated 26 September 2022)",
+    "url": "https://polyominoes.org/data",
+    "checked": true
+  },
+  "fe70-org": {
+    "kind": "website",
+    "authors": ["drakou111"],
+    "title": "fe70: does it tile a rectangle?",
+    "venue": "volunteer computing project with live search results",
+    "url": "https://fe70.org/",
+    "checked": true
   }
 }

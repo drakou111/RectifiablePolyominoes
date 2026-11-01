@@ -1,7 +1,8 @@
 {
   "id": "fe70",
   "names": ["fe70", "gun B(1.2^3.1^3)"],
-  "note": "The one width-2 polyomino whose rectangle-tiling status Dahlke's Gun Theorem leaves unresolved.",
+  "note": "The one width-2 polyomino whose rectangle-tiling status Dahlke's Gun Theorem leaves unresolved. Tulleken lists it as Problem 52.",
+  "seeAlso": ["tulleken-2019", "fe70-org"],
   "properties": {
     "rectifiable": {
       "status": "open",
