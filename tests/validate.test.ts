@@ -5,6 +5,7 @@ const references: DataFile = {
   path: "references.json",
   content: {
     "some-paper": {
+      kind: "publication",
       authors: ["A. Author"],
       title: "A paper",
       url: "https://example.org",
@@ -81,6 +82,37 @@ describe("validateData", () => {
     expect(errors).toMatch(/unknown reference "missing-paper"/);
     expect(errors).toMatch(/unknown field "colour"/);
     expect(errors).toMatch(/sparkle\]: unknown property/);
+  });
+
+  it("checks seeAlso keys and reference kinds", () => {
+    const errors = validateData(
+      {
+        path: "references.json",
+        content: {
+          "no-kind": {
+            authors: ["B"],
+            title: "T",
+            url: "https://x.org",
+            checked: true,
+          },
+        },
+      },
+      [
+        {
+          path: "polyominoes/4/e080.json",
+          content: {
+            id: "e080",
+            seeAlso: ["no-kind", "missing"],
+            properties: {},
+          },
+        },
+      ],
+      [],
+    ).errors.join("\n");
+    expect(errors).toMatch(
+      /\[no-kind\]: kind must be one of publication, website/,
+    );
+    expect(errors).toMatch(/\[seeAlso\]: unknown reference "missing"/);
   });
 
   it("rejects values that contradict the shape", () => {

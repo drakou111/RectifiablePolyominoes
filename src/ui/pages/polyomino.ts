@@ -288,6 +288,18 @@ export function polyominoPage(context: SiteContext, id: string): HTMLElement {
       ),
     ),
     item.entry?.note && h("p", {}, item.entry.note),
+    item.entry?.seeAlso?.length
+      ? h(
+          "p",
+          {},
+          "See also: ",
+          ...item.entry.seeAlso.flatMap((ref, i) => [
+            i > 0 ? "; " : "",
+            citationLink(ref, context.references.get(ref)),
+          ]),
+          ".",
+        )
+      : null,
     h("h2", {}, "Properties"),
     propertiesTable(item, context),
     orientationsFigure(item),

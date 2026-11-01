@@ -55,6 +55,8 @@ export interface PolyominoEntry {
   readonly id: string;
   readonly names?: readonly string[];
   readonly note?: string;
+  /** Reference keys for sources that discuss this polyomino beyond the first publications of its results. */
+  readonly seeAlso?: readonly string[];
   readonly properties: Properties;
 }
 
@@ -77,7 +79,16 @@ export interface Tiling extends TilingFile {
   readonly polyominoId: string;
 }
 
+export type ReferenceKind = "publication" | "website";
+
+export const REFERENCE_KINDS: readonly ReferenceKind[] = [
+  "publication",
+  "website",
+];
+
 export interface Reference {
+  /** Papers, books and manuscripts versus web pages, databases and software. */
+  readonly kind: ReferenceKind;
   readonly authors: readonly string[];
   readonly title: string;
   readonly year?: number;

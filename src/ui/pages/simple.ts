@@ -1,5 +1,5 @@
 import { MAX_GENERATED_SIZE } from "../../core/catalog";
-import { PROPERTY_DEFINITIONS } from "../../core/model";
+import { PROPERTY_DEFINITIONS, type ReferenceKind } from "../../core/model";
 import { polyominoHref, type SiteContext } from "../context";
 import { h, link } from "../dom";
 import { citationLink, formatProperty, fullCitation } from "../format";
@@ -141,13 +141,15 @@ export function referencesPage(
   params: URLSearchParams,
 ): HTMLElement {
   const citedBy = new Map<string, string[]>();
+  const cite = (ref: string, id: string): void => {
+    const list = citedBy.get(ref) ?? [];
+    if (!list.includes(id)) list.push(id);
+    citedBy.set(ref, list);
+  };
   for (const item of context.catalog.items) {
-    for (const record of Object.values(item.properties)) {
-      if (record?.ref === undefined) continue;
-      const list = citedBy.get(record.ref) ?? [];
-      if (!list.includes(item.id)) list.push(item.id);
-      citedBy.set(record.ref, list);
-    }
+    for (const record of Object.values(item.properties))
+      if (record?.ref !== undefined) cite(record.ref, item.id);
+    for (const ref of item.entry?.seeAlso ?? []) cite(ref, item.id);
   }
   const highlighted = params.get("ref");
   const sorted = [...context.references].sort(
@@ -155,29 +157,40 @@ export function referencesPage(
       (a.year ?? Infinity) - (b.year ?? Infinity) ||
       a.title.localeCompare(b.title),
   );
-  const list = h(
-    "ol",
-    { class: "references" },
-    ...sorted.map(([key, reference]) =>
-      h(
-        "li",
-        {
-          id: `ref-${key}`,
-          class: key === highlighted ? "highlight" : undefined,
-        },
-        ...fullCitation(reference),
-        citedBy.has(key) &&
+  const listOf = (kind: ReferenceKind): HTMLOListElement =>
+    h(
+      "ol",
+      { class: "references" },
+      ...sorted
+        .filter(([, reference]) => reference.kind === kind)
+        .map(([key, reference]) =>
           h(
-            "div",
-            { class: "muted" },
-            "Cited for: ",
-            ...(citedBy.get(key) ?? []).flatMap((id, i) => [
-              i > 0 ? ", " : "",
-              link(polyominoHref(id), id),
-            ]),
+            "li",
+            {
+              id: `ref-${key}`,
+              class: key === highlighted ? "highlight" : undefined,
+            },
+            ...fullCitation(reference),
+            citedBy.has(key) &&
+              h(
+                "div",
+                { class: "muted" },
+                "Cited for: ",
+                ...(citedBy.get(key) ?? []).flatMap((id, i) => [
+                  i > 0 ? ", " : "",
+                  link(polyominoHref(id), id),
+                ]),
+              ),
           ),
-      ),
-    ),
+        ),
+    );
+  const list = h(
+    "div",
+    {},
+    h("h2", {}, "Papers, books and manuscripts"),
+    listOf("publication"),
+    h("h2", {}, "Websites, databases and software"),
+    listOf("website"),
   );
   if (highlighted !== null)
     requestAnimationFrame(() =>

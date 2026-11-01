@@ -2,6 +2,7 @@ import { minimumColoring } from "./coloring";
 import { deriveProperties } from "./derived";
 import {
   PROPERTY_KEYS,
+  REFERENCE_KINDS,
   STATUSES,
   type PolyominoEntry,
   type Properties,
@@ -40,9 +41,10 @@ const PROPERTY_FIELDS = new Set([
   "reason",
   "note",
 ]);
-const ENTRY_FIELDS = new Set(["id", "names", "note", "properties"]);
+const ENTRY_FIELDS = new Set(["id", "names", "note", "seeAlso", "properties"]);
 const TILING_FIELDS = new Set(["width", "height", "placements", "ref", "note"]);
 const REFERENCE_FIELDS = new Set([
+  "kind",
   "authors",
   "title",
   "year",
@@ -140,6 +142,8 @@ class Validator {
         continue;
       }
       this.checkFields(at, raw, REFERENCE_FIELDS);
+      if (!(REFERENCE_KINDS as readonly unknown[]).includes(raw.kind))
+        this.error(at, `kind must be one of ${REFERENCE_KINDS.join(", ")}`);
       if (
         !Array.isArray(raw.authors) ||
         raw.authors.length === 0 ||
@@ -204,6 +208,12 @@ class Validator {
       )
     )
       this.error(where, "names must be a list of strings");
+    if (raw.seeAlso !== undefined) {
+      if (Array.isArray(raw.seeAlso))
+        for (const ref of raw.seeAlso)
+          this.checkReference(`${where} [seeAlso]`, ref);
+      else this.error(where, "seeAlso must be a list of reference keys");
+    }
     if (!isObject(raw.properties)) {
       this.error(where, "properties must be an object");
       return;
