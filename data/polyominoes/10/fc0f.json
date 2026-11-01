@@ -1,0 +1,11 @@
+{
+  "id": "fc0f",
+  "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": false,
+      "reason": "Column sweep along a wall: no rectangle of height below 5 exists (exact search), and with a band of height 5 the edge can never be completed flat again, whatever the width (2442 states explored)."
+    }
+  }
+}

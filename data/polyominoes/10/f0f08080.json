@@ -57,6 +57,12 @@
         ],
         "complete": true
       }
+    },
+    "minColors": {
+      "status": "computed",
+      "value": 2,
+      "ref": "site-solver",
+      "reason": "The stored 4x5 tiling is 2-colorable, and two copies of a non-rectangular piece always touch."
     }
   }
 }

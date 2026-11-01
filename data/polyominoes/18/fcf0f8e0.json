@@ -1,5 +1,12 @@
 {
   "id": "fcf0f8e0",
   "names": ["cut"],
-  "properties": {}
+  "properties": {
+    "minColors": {
+      "status": "computed",
+      "value": 2,
+      "ref": "site-solver",
+      "reason": "The stored 9x4 tiling is 2-colorable, and two copies of a non-rectangular piece always touch."
+    }
+  }
 }

@@ -1,0 +1,11 @@
+{
+  "id": "fce040",
+  "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": false,
+      "reason": "No arrangement of copies fills the 8 x 8 corner region of any rectangle (exhaustive search over all rectangle sizes)."
+    }
+  }
+}

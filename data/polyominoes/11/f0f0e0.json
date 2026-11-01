@@ -175,6 +175,11 @@
         ],
         "complete": true
       }
+    },
+    "minColors": {
+      "status": "open",
+      "upper": 4,
+      "note": "Upper bound from the stored 25x22 tiling."
     }
   }
 }

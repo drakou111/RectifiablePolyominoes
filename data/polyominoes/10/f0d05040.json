@@ -1,0 +1,29 @@
+{
+  "id": "f0d05040",
+  "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": true,
+      "reason": "A tiling was found."
+    },
+    "order": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": 2,
+      "reason": "Every rectangle holding fewer than 2 copies was searched exhaustively."
+    },
+    "smallestRectangles": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": [[4, 5]],
+      "reason": "Every rectangle holding 2 copies was searched exhaustively."
+    },
+    "minColors": {
+      "status": "computed",
+      "value": 2,
+      "ref": "site-solver",
+      "reason": "The stored 4x5 tiling is 2-colorable, and two copies of a non-rectangular piece always touch."
+    }
+  }
+}

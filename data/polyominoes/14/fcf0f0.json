@@ -33,6 +33,11 @@
         "rectangles": [[66, 84]],
         "complete": false
       }
+    },
+    "minColors": {
+      "status": "open",
+      "upper": 4,
+      "note": "Upper bound from the stored 66x84 tiling."
     }
   }
 }

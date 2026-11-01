@@ -181,6 +181,11 @@
         ],
         "complete": true
       }
+    },
+    "minColors": {
+      "status": "open",
+      "upper": 4,
+      "note": "Upper bound from the stored 40x36 tiling."
     }
   }
 }

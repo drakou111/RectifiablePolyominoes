@@ -202,5 +202,13 @@
     "venue": "cflmath.com polyomino pages, one page per polyomino (archived copies from 2016 to 2025)",
     "url": "https://web.archive.org/web/2022/https://www.cflmath.com/Polyomino/rectifiable_data.html",
     "checked": true
+  },
+  "site-solver": {
+    "kind": "website",
+    "authors": ["Rectangle Tilings catalogue"],
+    "title": "Exhaustive searches by this catalogue's solver (tools/solve.ts)",
+    "venue": "this website; methods described in the guide page \"Computed results\"",
+    "url": "#/guide/computations",
+    "checked": true
   }
 }

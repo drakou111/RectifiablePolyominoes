@@ -1,0 +1,11 @@
+{
+  "id": "f8c06020",
+  "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": false,
+      "reason": "No arrangement of copies fills the 6 x 6 corner region of any rectangle (exhaustive search over all rectangle sizes)."
+    }
+  }
+}

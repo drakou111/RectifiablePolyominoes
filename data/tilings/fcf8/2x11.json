@@ -1,0 +1,10 @@
+{
+  "width": 2,
+  "height": 11,
+  "ref": "site-solver",
+  "note": "Found by exhaustive search (tools/solve.ts) for a smallest rectangle recorded from the literature.",
+  "placements": [
+    { "o": 1, "x": 0, "y": 0 },
+    { "o": 3, "x": 0, "y": 5 }
+  ]
+}

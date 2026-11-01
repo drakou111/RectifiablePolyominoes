@@ -23,7 +23,10 @@ Usage: npx tsx tools/solve.ts [options]
   --max-copies <k>   try every rectangle holding up to k copies (default 10)
   --depths <list>    corner region depths to try, e.g. 6,8 (default 6,8)
   --budget <steps>   step budget per single search (default 2000000)
+  --band-height <h>  largest band height of the strip sweep (default 8)
+  --max-states <n>   state limit of one strip sweep (default 2000000)
   --workers <n>      worker threads (default: all cores)
+  --only <ids>       comma-separated IDs: process just these pieces
   --verify           compare with existing data instead of writing; reports disagreements
   --dry-run          compute and report, write nothing
 
@@ -47,6 +50,8 @@ const parameters: SolveParameters = {
   maxCopies: Number(argument("--max-copies", "10")),
   depths: argument("--depths", "6,8").split(",").map(Number),
   stepBudget: Number(argument("--budget", "2000000")),
+  maxBandHeight: Number(argument("--band-height", "8")),
+  maxStates: Number(argument("--max-states", "2000000")),
 };
 const workerCount = Number(
   argument("--workers", String(availableParallelism())),
@@ -66,10 +71,12 @@ for (const [name, value] of Object.entries({
       `--${name} must be a positive integer, got ${String(value)}`,
     );
 
+const only = new Set(argument("--only", "").split(",").filter(Boolean));
 const store = new DataStore();
 const jobs: SolveJob[] = [];
 for (const shape of enumerateFreePolyominoes(maxSize).flat()) {
   if (shape.size < minSize || shape.hasHole() || shape.isRectangle()) continue;
+  if (only.size > 0 && !only.has(shape.id)) continue;
   const entry = store.entry(shape);
   const rectifiable = entry.properties.rectifiable?.value;
   const order = entry.properties.order;
@@ -84,6 +91,7 @@ for (const shape of enumerateFreePolyominoes(maxSize).flat()) {
       searchOrder: true,
       testCorner: true,
       tileSizes: [],
+      testStrip: true,
     });
     continue;
   }
@@ -100,6 +108,7 @@ for (const shape of enumerateFreePolyominoes(maxSize).flat()) {
     searchOrder,
     testCorner: rectifiable === undefined,
     tileSizes: hasTilings || searchOrder ? [] : smallest,
+    testStrip: rectifiable === undefined,
   };
   if (job.searchOrder || job.testCorner || job.tileSizes.length > 0)
     jobs.push(job);
@@ -120,6 +129,7 @@ if (!verify) {
           searchOrder: false,
           testCorner: false,
           tileSizes: smallest,
+          testStrip: false,
         });
     }
   }
@@ -172,6 +182,8 @@ const computed = (record: object): PropertyRecord<unknown> =>
 const summary = {
   ordersFound: 0,
   blocked: 0,
+  stripBlocked: 0,
+  stripRectangles: 0,
   tilingsWritten: 0,
   undecided: [] as string[],
   disagreements: [] as string[],
@@ -241,6 +253,68 @@ for (const outcome of outcomes.sort((a, b) => (a.id < b.id ? -1 : 1))) {
         }),
         "solver",
       );
+  } else if (outcome.strip.kind === "no-rectangle") {
+    summary.stripBlocked++;
+    const { bandHeight, states } = outcome.strip;
+    if (known.rectifiable?.value === true)
+      summary.disagreements.push(
+        `${outcome.id}: data says rectifiable, strip sweep says no rectangle`,
+      );
+    if (!dryRun)
+      store.setProperty(
+        shape,
+        "rectifiable",
+        computed({
+          value: false,
+          reason: `Column sweep along a wall: no rectangle of height below ${bandHeight} exists (exact search), and with a band of height ${bandHeight} the edge can never be completed flat again, whatever the width (${states} states explored).`,
+        }),
+        "solver",
+      );
+  } else if (outcome.strip.kind === "rectangle") {
+    summary.stripRectangles++;
+    const { width, height, placements } = outcome.strip;
+    if (known.rectifiable?.value === false)
+      summary.disagreements.push(
+        `${outcome.id}: data says no rectangle, strip sweep found ${width}x${height}`,
+      );
+    if (!dryRun) {
+      store.setProperty(
+        shape,
+        "rectifiable",
+        computed({
+          value: true,
+          reason: `A ${width} x ${height} tiling was found.`,
+        }),
+        "solver",
+      );
+      store.setProperty(
+        shape,
+        "order",
+        outcome.order === "none"
+          ? {
+              status: "open",
+              upper: placements.length,
+              lower: parameters.maxCopies + 1,
+              note: `Upper bound from a ${width} x ${height} tiling; every rectangle with at most ${parameters.maxCopies} copies was ruled out by exhaustive search.`,
+            }
+          : {
+              status: "open",
+              upper: placements.length,
+              note: `Upper bound from a ${width} x ${height} tiling.`,
+            },
+        "solver",
+      );
+      if (
+        store.writeTiling(shape, {
+          width,
+          height,
+          placements,
+          ref: SOURCE_REF,
+          note: `Found by the strip sweep (tools/solve.ts): the narrowest rectangle height that can be tiled is ${height}.`,
+        })
+      )
+        summary.tilingsWritten++;
+    }
   } else if (known.rectifiable === undefined) {
     summary.undecided.push(outcome.id);
   }
@@ -260,7 +334,7 @@ for (const outcome of outcomes.sort((a, b) => (a.id < b.id ? -1 : 1))) {
 const saved = dryRun ? "dry run, nothing written" : store.save();
 const seconds = (Date.now() - started) / 1000;
 console.log(
-  `\n${jobs.length} pieces in ${seconds.toFixed(1)} s: ${summary.ordersFound} orders found, ${summary.blocked} blocked by the corner test, ${summary.undecided.length} undecided`,
+  `\n${jobs.length} pieces in ${seconds.toFixed(1)} s: ${summary.ordersFound} orders found, ${summary.blocked} blocked by the corner test, ${summary.stripBlocked} by the strip sweep, ${summary.stripRectangles} rectangles found by the strip sweep, ${summary.undecided.length} undecided`,
 );
 console.log(saved);
 if (summary.disagreements.length > 0)

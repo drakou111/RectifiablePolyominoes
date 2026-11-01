@@ -75,6 +75,11 @@
         ],
         "complete": true
       }
+    },
+    "minColors": {
+      "status": "open",
+      "upper": 3,
+      "note": "Upper bound from the stored 12x9 tiling."
     }
   }
 }

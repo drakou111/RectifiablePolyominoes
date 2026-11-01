@@ -32,10 +32,51 @@
   out; such pieces are listed as undecided until a stronger argument is entered.
 </p>
 
+<h2>Strip sweep</h2>
+<p>
+  Pieces that escape the corner test are swept column by column along one wall
+  of the rectangle, starting at its left wall. The state is which cells of the
+  first <var>h</var> rows (the band) are already covered in the next few
+  columns.
+</p>
+<ul>
+  <li>
+    With a hard wall at row <var>h</var>, the sweep is exact: returning to an
+    empty state after <var>W</var> columns is a tiling of an
+    <var>h</var> &times; <var>W</var> rectangle, and never returning proves that
+    no rectangle of height <var>h</var> exists, whatever its width.
+  </li>
+  <li>
+    Without that wall, cells above the band are ignored, which only allows more.
+    If the empty state is still unreachable, no rectangle of height
+    <var>h</var> or more exists, whatever its width.
+  </li>
+</ul>
+<p>
+  Excluding every height below <var>h</var> exactly and then all larger heights
+  with the band proves that the piece tiles no rectangle. This settles pieces
+  whose corner forces a pattern that runs along the wall, such as the S
+  tetromino, and it was run with bands of up to 14 rows.
+</p>
+
+<h2>Width-2 pieces</h2>
+<p>
+  The pieces of width 2 that remained undecided were settled with Dahlke's Gun
+  Theorem (<a data-ref="dahlke-gun"></a>), which classifies all polyominoes of
+  width 2. Their entries cite the theorem rather than a computation.
+</p>
+
+<h2>Still undecided</h2>
+<p>
+  Up to 10 cells, two pieces resist every method above:
+  <a data-poly="f0e0c040"></a> and <a data-poly="f8e060"></a>. Neither tiles a
+  rectangle holding 24 or fewer copies.
+</p>
+
 <h2>Checks</h2>
 <p>
   The solver was verified against Dahlke's complete list of orders through
   hexominoes and against Reid's data for heptominoes and octominoes: every order
-  it can reach agrees, and the corner test never rejects a piece known to tile a
-  rectangle.
+  it can reach agrees, and neither the corner test nor the strip sweep rejects a
+  piece known to tile a rectangle.
 </p>

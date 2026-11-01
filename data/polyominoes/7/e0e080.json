@@ -89,6 +89,11 @@
         ],
         "complete": true
       }
+    },
+    "minColors": {
+      "status": "open",
+      "upper": 4,
+      "note": "Upper bound from the stored 14x14 tiling."
     }
   }
 }

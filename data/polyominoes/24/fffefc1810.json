@@ -1,5 +1,11 @@
 {
   "id": "fffefc1810",
   "names": ["joined"],
-  "properties": {}
+  "properties": {
+    "minColors": {
+      "status": "open",
+      "upper": 3,
+      "note": "Upper bound from the stored 8x12 tiling."
+    }
+  }
 }

@@ -71,7 +71,7 @@ for (const id of readdirSync(tilingsDirectory)) {
         status: "computed",
         value: 2,
         ref: "site-solver",
-        reason: `${tilingName} is 2-colorable, and two copies of a non-rectangular piece always touch.`,
+        reason: `${tilingName.charAt(0).toUpperCase()}${tilingName.slice(1)} is 2-colorable, and two copies of a non-rectangular piece always touch.`,
       },
       "colors",
     );

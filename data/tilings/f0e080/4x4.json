@@ -1,0 +1,10 @@
+{
+  "width": 4,
+  "height": 4,
+  "ref": "site-solver",
+  "note": "Found by exhaustive search (tools/solve.ts).",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 2, "x": 0, "y": 1 }
+  ]
+}

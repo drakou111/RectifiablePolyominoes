@@ -1,5 +1,11 @@
 {
   "id": "ff7e3c18",
   "names": ["symmetric"],
-  "properties": {}
+  "properties": {
+    "minColors": {
+      "status": "open",
+      "upper": 3,
+      "note": "Upper bound from the stored 10x8 tiling."
+    }
+  }
 }
