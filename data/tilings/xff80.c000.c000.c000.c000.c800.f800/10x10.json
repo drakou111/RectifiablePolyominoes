@@ -1,0 +1,12 @@
+{
+  "width": 10,
+  "height": 10,
+  "ref": "dahlke-trec",
+  "note": "Dahlke, solution-2d, \"yin yang yon yung: order 4\"",
+  "placements": [
+    { "o": 4, "x": 0, "y": 0 },
+    { "o": 7, "x": 3, "y": 0 },
+    { "o": 5, "x": 0, "y": 1 },
+    { "o": 6, "x": 1, "y": 3 }
+  ]
+}

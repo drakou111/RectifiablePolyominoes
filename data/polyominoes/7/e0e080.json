@@ -1,0 +1,94 @@
+{
+  "id": "e0e080",
+  "names": ["P heptomino"],
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "value": true,
+      "ref": "dahlke-trec",
+      "refDetail": "solution-2d",
+      "untraced": true
+    },
+    "order": {
+      "status": "proven",
+      "value": 28,
+      "ref": "dahlke-trec",
+      "refDetail": "solution-2d",
+      "untraced": true
+    },
+    "oddOrder": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "7omino4_rect.html",
+      "untraced": true,
+      "value": 45
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "7omino4_rect.html",
+      "untraced": true,
+      "value": [[14, 14]]
+    },
+    "smallestSquare": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "7omino4_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Derived from the complete list of prime rectangles: every tileable rectangle is glued from primes.",
+      "value": 14
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "7omino4_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [11, 35],
+          [11, 42],
+          [11, 49],
+          [11, 56],
+          [11, 63],
+          [12, 21],
+          [12, 28],
+          [12, 35],
+          [14, 14],
+          [14, 19],
+          [14, 20],
+          [14, 22],
+          [14, 23],
+          [14, 24],
+          [14, 25],
+          [14, 26],
+          [14, 27],
+          [14, 29],
+          [14, 30],
+          [14, 31],
+          [14, 32],
+          [14, 35],
+          [15, 21],
+          [15, 28],
+          [15, 35],
+          [16, 21],
+          [16, 28],
+          [16, 35],
+          [17, 21],
+          [17, 28],
+          [17, 35],
+          [18, 21],
+          [18, 28],
+          [18, 35],
+          [19, 21],
+          [20, 21],
+          [21, 21],
+          [21, 22],
+          [21, 23],
+          [21, 25],
+          [21, 26]
+        ],
+        "complete": true
+      }
+    }
+  }
+}

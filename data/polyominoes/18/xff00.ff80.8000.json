@@ -1,0 +1,19 @@
+{
+  "id": "xff00.ff80.8000",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "value": true,
+      "ref": "dahlke-trec",
+      "refDetail": "solution-2d",
+      "untraced": true
+    },
+    "order": {
+      "status": "proven",
+      "value": 468,
+      "ref": "dahlke-trec",
+      "refDetail": "solution-2d",
+      "untraced": true
+    }
+  }
+}

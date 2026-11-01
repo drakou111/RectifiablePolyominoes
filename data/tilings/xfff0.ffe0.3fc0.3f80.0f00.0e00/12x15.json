@@ -1,0 +1,12 @@
+{
+  "width": 12,
+  "height": 15,
+  "ref": "dahlke-trec",
+  "note": "Dahlke, solution-2d, \"joined stairs, same level: order 4\"",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 7, "x": 6, "y": 1 },
+    { "o": 5, "x": 0, "y": 2 },
+    { "o": 2, "x": 0, "y": 9 }
+  ]
+}

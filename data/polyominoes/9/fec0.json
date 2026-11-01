@@ -1,0 +1,58 @@
+{
+  "id": "fec0",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino02_rect.html",
+      "untraced": true,
+      "value": true
+    },
+    "order": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino02_rect.html",
+      "untraced": true,
+      "value": 2
+    },
+    "oddOrder": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino02_rect.html",
+      "untraced": true,
+      "value": 95
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino02_rect.html",
+      "untraced": true,
+      "value": [[2, 9]]
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino02_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [2, 9],
+          [13, 135],
+          [15, 57],
+          [15, 66],
+          [15, 69],
+          [15, 78],
+          [15, 99],
+          [19, 45],
+          [21, 60],
+          [21, 66],
+          [21, 69],
+          [21, 75],
+          [24, 39],
+          [24, 51]
+        ],
+        "complete": false
+      }
+    }
+  }
+}

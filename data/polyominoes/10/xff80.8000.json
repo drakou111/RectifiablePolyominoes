@@ -1,0 +1,39 @@
+{
+  "id": "xff80.8000",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino01_rect.html",
+      "untraced": true,
+      "value": true
+    },
+    "order": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino01_rect.html",
+      "untraced": true,
+      "value": 2
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino01_rect.html",
+      "untraced": true,
+      "value": [[2, 10]]
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino01_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [2, 10],
+          [11, 20]
+        ],
+        "complete": false
+      }
+    }
+  }
+}

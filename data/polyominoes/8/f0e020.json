@@ -1,0 +1,48 @@
+{
+  "id": "f0e020",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "value": true,
+      "ref": "dahlke-trec",
+      "refDetail": "solution-2d",
+      "untraced": true
+    },
+    "order": {
+      "status": "proven",
+      "value": 24,
+      "ref": "dahlke-trec",
+      "refDetail": "solution-2d",
+      "untraced": true
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "8omino09_rect.html",
+      "untraced": true,
+      "value": [[12, 16]]
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "8omino09_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [12, 16],
+          [12, 24],
+          [14, 16],
+          [14, 24],
+          [16, 16],
+          [16, 18],
+          [16, 20],
+          [16, 22],
+          [18, 24],
+          [20, 24],
+          [22, 24]
+        ],
+        "complete": false
+      }
+    }
+  }
+}

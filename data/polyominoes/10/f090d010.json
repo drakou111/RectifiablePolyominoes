@@ -1,0 +1,52 @@
+{
+  "id": "f090d010",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino16_rect.html",
+      "untraced": true,
+      "value": true
+    },
+    "order": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino16_rect.html",
+      "untraced": true,
+      "value": 2
+    },
+    "oddOrder": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino16_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Every prime rectangle holds an even number of copies, so every tileable rectangle does.",
+      "value": "none"
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino16_rect.html",
+      "untraced": true,
+      "value": [[4, 5]]
+    },
+    "smallestSquare": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino16_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Derived from the complete list of prime rectangles: every tileable rectangle is glued from primes.",
+      "value": 20
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino16_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [[4, 5]],
+        "complete": true
+      }
+    }
+  }
+}

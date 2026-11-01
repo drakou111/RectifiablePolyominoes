@@ -1,0 +1,65 @@
+{
+  "id": "f8f0",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino04_rect.html",
+      "untraced": true,
+      "value": true
+    },
+    "order": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino04_rect.html",
+      "untraced": true,
+      "value": 2
+    },
+    "oddOrder": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino04_rect.html",
+      "untraced": true,
+      "value": 49
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino04_rect.html",
+      "untraced": true,
+      "value": [[2, 9]]
+    },
+    "smallestSquare": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino04_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Derived from the complete list of prime rectangles: every tileable rectangle is glued from primes.",
+      "value": 18
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino04_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [2, 9],
+          [13, 63],
+          [15, 33],
+          [15, 39],
+          [15, 42],
+          [15, 45],
+          [15, 48],
+          [21, 21],
+          [21, 24],
+          [21, 30],
+          [21, 33],
+          [23, 27],
+          [24, 24]
+        ],
+        "complete": true
+      }
+    }
+  }
+}

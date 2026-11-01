@@ -194,5 +194,13 @@
     "venue": "volunteer computing project with live search results",
     "url": "https://fe70.org/",
     "checked": true
+  },
+  "reid-rectifiable-data": {
+    "kind": "website",
+    "authors": ["Michael Reid"],
+    "title": "Rectifiable polyominoes: data for prime rectangles",
+    "venue": "cflmath.com polyomino pages, one page per polyomino (archived copies from 2016 to 2025)",
+    "url": "https://web.archive.org/web/2022/https://www.cflmath.com/Polyomino/rectifiable_data.html",
+    "checked": true
   }
 }

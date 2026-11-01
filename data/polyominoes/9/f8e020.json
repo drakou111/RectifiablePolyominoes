@@ -1,0 +1,110 @@
+{
+  "id": "f8e020",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino28_rect.html",
+      "untraced": true,
+      "value": true
+    },
+    "order": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino28_rect.html",
+      "untraced": true,
+      "value": 4
+    },
+    "oddOrder": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino28_rect.html",
+      "untraced": true,
+      "value": 221
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino28_rect.html",
+      "untraced": true,
+      "value": [[6, 6]]
+    },
+    "smallestSquare": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino28_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Derived from the complete list of prime rectangles: every tileable rectangle is glued from primes.",
+      "value": 6
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "9omino28_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [6, 6],
+          [18, 25],
+          [18, 32],
+          [18, 34],
+          [18, 41],
+          [18, 45],
+          [19, 72],
+          [19, 90],
+          [19, 108],
+          [19, 126],
+          [22, 162],
+          [22, 180],
+          [22, 198],
+          [22, 216],
+          [22, 234],
+          [22, 252],
+          [22, 270],
+          [22, 288],
+          [22, 306],
+          [23, 36],
+          [23, 54],
+          [24, 33],
+          [26, 54],
+          [26, 72],
+          [26, 90],
+          [27, 48],
+          [27, 54],
+          [27, 60],
+          [27, 66],
+          [27, 72],
+          [27, 78],
+          [27, 84],
+          [27, 90],
+          [27, 93],
+          [27, 99],
+          [27, 105],
+          [27, 111],
+          [27, 117],
+          [27, 123],
+          [27, 129],
+          [27, 135],
+          [28, 36],
+          [28, 54],
+          [30, 39],
+          [33, 36],
+          [33, 42],
+          [33, 63],
+          [33, 69],
+          [33, 75],
+          [33, 81],
+          [39, 51],
+          [39, 57],
+          [39, 63],
+          [39, 69],
+          [45, 45],
+          [45, 51],
+          [45, 57],
+          [51, 51]
+        ],
+        "complete": true
+      }
+    }
+  }
+}

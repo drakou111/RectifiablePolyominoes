@@ -1,0 +1,10 @@
+{
+  "width": 9,
+  "height": 4,
+  "ref": "dahlke-trec",
+  "note": "Dahlke, solution-2d, \"cut rectangle: order 2\"",
+  "placements": [
+    { "o": 6, "x": 0, "y": 0 },
+    { "o": 4, "x": 3, "y": 0 }
+  ]
+}

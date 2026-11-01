@@ -1,0 +1,36 @@
+{
+  "id": "fee0",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino03_rect.html",
+      "untraced": true,
+      "value": true
+    },
+    "order": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino03_rect.html",
+      "untraced": true,
+      "value": 2
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino03_rect.html",
+      "untraced": true,
+      "value": [[2, 10]]
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino03_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [[2, 10]],
+        "complete": false
+      }
+    }
+  }
+}

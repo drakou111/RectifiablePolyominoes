@@ -1,0 +1,53 @@
+{
+  "id": "e0a080",
+  "names": ["J hexomino"],
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "value": true,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    },
+    "order": {
+      "status": "proven",
+      "value": 2,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    },
+    "oddOrder": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "j6_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Every prime rectangle holds an even number of copies, so every tileable rectangle does.",
+      "value": "none"
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "j6_rect.html",
+      "untraced": true,
+      "value": [[3, 4]]
+    },
+    "smallestSquare": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "j6_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Derived from the complete list of prime rectangles: every tileable rectangle is glued from primes.",
+      "value": 12
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "j6_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [[3, 4]],
+        "complete": true
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "id": "f080",
+  "names": ["L pentomino"],
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "value": true,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    },
+    "order": {
+      "status": "proven",
+      "value": 2,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    },
+    "oddOrder": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "l5_rect.html",
+      "untraced": true,
+      "value": 21
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "l5_rect.html",
+      "untraced": true,
+      "value": [[2, 5]]
+    },
+    "smallestSquare": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "l5_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Derived from the complete list of prime rectangles: every tileable rectangle is glued from primes.",
+      "value": 10
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "l5_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [2, 5],
+          [7, 15]
+        ],
+        "complete": true
+      }
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "id": "f040",
+  "names": ["Y pentomino"],
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "value": true,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    },
+    "order": {
+      "status": "proven",
+      "value": 10,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    },
+    "oddOrder": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "y5_rect.html",
+      "untraced": true,
+      "value": 45
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "y5_rect.html",
+      "untraced": true,
+      "value": [[5, 10]]
+    },
+    "smallestSquare": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "y5_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Derived from the complete list of prime rectangles: every tileable rectangle is glued from primes.",
+      "value": 10
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "y5_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [5, 10],
+          [9, 20],
+          [9, 30],
+          [9, 45],
+          [9, 55],
+          [10, 14],
+          [10, 16],
+          [10, 23],
+          [10, 27],
+          [11, 20],
+          [11, 30],
+          [11, 35],
+          [11, 45],
+          [12, 50],
+          [12, 55],
+          [12, 60],
+          [12, 65],
+          [12, 70],
+          [12, 75],
+          [12, 80],
+          [12, 85],
+          [12, 90],
+          [12, 95],
+          [13, 20],
+          [13, 30],
+          [13, 35],
+          [13, 45],
+          [14, 15],
+          [15, 15],
+          [15, 16],
+          [15, 17],
+          [15, 19],
+          [15, 21],
+          [15, 22],
+          [15, 23],
+          [17, 20],
+          [17, 25],
+          [18, 25],
+          [18, 35],
+          [22, 25]
+        ],
+        "complete": true
+      }
+    }
+  }
+}

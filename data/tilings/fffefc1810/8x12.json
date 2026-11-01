@@ -1,0 +1,12 @@
+{
+  "width": 8,
+  "height": 12,
+  "ref": "dahlke-trec",
+  "note": "Dahlke, solution-2d, \"joined stairs, uneven: order 4\"",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 7, "x": 3, "y": 1 },
+    { "o": 5, "x": 0, "y": 3 },
+    { "o": 2, "x": 0, "y": 7 }
+  ]
+}

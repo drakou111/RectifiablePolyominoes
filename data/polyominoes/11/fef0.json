@@ -1,0 +1,37 @@
+{
+  "id": "fef0",
+  "names": ["11-omino"],
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "11omino4_rect.html",
+      "untraced": true,
+      "value": true
+    },
+    "order": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "11omino4_rect.html",
+      "untraced": true,
+      "value": 2
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "11omino4_rect.html",
+      "untraced": true,
+      "value": [[2, 11]]
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "11omino4_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [[2, 11]],
+        "complete": false
+      }
+    }
+  }
+}

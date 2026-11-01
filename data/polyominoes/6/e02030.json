@@ -1,0 +1,12 @@
+{
+  "id": "e02030",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "value": false,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    }
+  }
+}

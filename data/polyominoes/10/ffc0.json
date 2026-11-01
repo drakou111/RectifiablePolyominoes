@@ -1,0 +1,60 @@
+{
+  "id": "ffc0",
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino02_rect.html",
+      "untraced": true,
+      "value": true
+    },
+    "order": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino02_rect.html",
+      "untraced": true,
+      "value": 2
+    },
+    "oddOrder": {
+      "status": "open",
+      "upper": 99,
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino02_rect.html",
+      "untraced": true,
+      "note": "Smallest known odd rectangle."
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino02_rect.html",
+      "untraced": true,
+      "value": [[2, 10]]
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "10omino02_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [2, 10],
+          [11, 120],
+          [11, 150],
+          [11, 180],
+          [11, 210],
+          [12, 135],
+          [13, 60],
+          [13, 90],
+          [15, 48],
+          [15, 66],
+          [15, 72],
+          [15, 78],
+          [15, 84],
+          [15, 102],
+          [18, 75]
+        ],
+        "complete": false
+      }
+    }
+  }
+}

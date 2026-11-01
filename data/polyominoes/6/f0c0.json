@@ -1,0 +1,61 @@
+{
+  "id": "f0c0",
+  "names": ["P hexomino"],
+  "properties": {
+    "rectifiable": {
+      "status": "proven",
+      "value": true,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    },
+    "order": {
+      "status": "proven",
+      "value": 2,
+      "ref": "dahlke-trec",
+      "refDetail": "theorems/hexlist-2d",
+      "untraced": true
+    },
+    "oddOrder": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "p6_rect.html",
+      "untraced": true,
+      "value": 11
+    },
+    "smallestRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "p6_rect.html",
+      "untraced": true,
+      "value": [
+        [2, 6],
+        [3, 4]
+      ]
+    },
+    "smallestSquare": {
+      "ref": "reid-rectifiable-data",
+      "refDetail": "p6_rect.html",
+      "untraced": true,
+      "status": "proven",
+      "reason": "Derived from the complete list of prime rectangles: every tileable rectangle is glued from primes.",
+      "value": 6
+    },
+    "primeRectangles": {
+      "status": "proven",
+      "ref": "reid-rectifiable-data",
+      "refDetail": "p6_rect.html",
+      "untraced": true,
+      "value": {
+        "rectangles": [
+          [2, 6],
+          [3, 4],
+          [5, 18],
+          [6, 11],
+          [9, 10]
+        ],
+        "complete": true
+      }
+    }
+  }
+}
