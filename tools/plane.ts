@@ -195,4 +195,10 @@ writeFileSync(
       tally,
       undecided,
       disagreements,
-      slow
+      slowest,
+    },
+    null,
+    2,
+  ),
+);
+console.log(`summary saved to output/plane/${stamp}.json`);

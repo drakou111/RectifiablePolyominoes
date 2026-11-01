@@ -110,6 +110,20 @@ export class DataStore {
       });
   }
 
+  /** Replaces a property only while it is still open: used to tighten bounds or settle it. */
+  replaceOpen(
+    polyomino: Polyomino,
+    key: PropertyKey,
+    record: PropertyRecord<unknown>,
+  ): boolean {
+    const entry = this.entry(polyomino);
+    const existing = entry.properties[key];
+    if (existing !== undefined && existing.status !== "open") return false;
+    entry.properties[key] = record;
+    this.dirty.add(polyomino.id);
+    return true;
+  }
+
   hasProperty(polyomino: Polyomino, key: PropertyKey): boolean {
     return this.entry(polyomino).properties[key] !== undefined;
   }
