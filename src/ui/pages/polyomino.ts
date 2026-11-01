@@ -7,6 +7,7 @@ import { loadTiling } from "../../data";
 import type { SiteContext } from "../context";
 import { append, h, link } from "../dom";
 import { citationLink, formatProperty, statusBadge } from "../format";
+import { polyominoDownloadButton } from "../download";
 import {
   COLOR_MODES,
   renderPolyomino,
@@ -64,6 +65,16 @@ function propertiesTable(
         "td",
         {},
         source,
+        record?.untraced &&
+          h(
+            "span",
+            {
+              class: "badge unchecked",
+              title:
+                "The citation is the data source; the first publication is not yet traced",
+            },
+            "first publication not traced",
+          ),
         record?.reason && h("div", {}, record.reason),
         record?.note && h("div", { class: "muted" }, record.note),
       ),
@@ -283,8 +294,10 @@ export function polyominoPage(context: SiteContext, id: string): HTMLElement {
           {},
           item.entry === undefined
             ? h("span", { class: "muted" }, `none yet (would be ${dataPath})`)
-            : h("code", {}, dataPath),
+            : link(dataPath, h("code", {}, dataPath)),
         ),
+        h("dt", {}, "Download"),
+        h("dd", {}, polyominoDownloadButton(item, context)),
       ),
     ),
     item.entry?.note && h("p", {}, item.entry.note),

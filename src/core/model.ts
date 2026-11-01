@@ -45,6 +45,8 @@ export interface PropertyRecord<V> {
   /** Short proof idea or method, e.g. "checkerboard coloring". */
   readonly reason?: string;
   readonly note?: string;
+  /** True when `ref` is the data source, not yet traced back to the first publication. */
+  readonly untraced?: boolean;
 }
 
 export type Properties = {

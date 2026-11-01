@@ -4,7 +4,10 @@ import { polyominoHref, type SiteContext } from "../context";
 import { h, link } from "../dom";
 import { citationLink, formatProperty, fullCitation } from "../format";
 import { renderPolyomino } from "../render";
+import { allDataDownloadButton } from "../download";
 import { GUIDE_TOPICS } from "./guide";
+
+const MAX_LISTED_CITATIONS = 30;
 
 export function homePage(context: SiteContext): HTMLElement {
   const { items } = context.catalog;
@@ -53,6 +56,17 @@ export function homePage(context: SiteContext): HTMLElement {
         `: ${context.references.size} sources.`,
       ),
     ),
+    h("h2", {}, "Data"),
+    h(
+      "p",
+      {},
+      "Everything on this site is plain JSON. The button below exports every polyomino (with shape, derived and entered properties), every tiling and every reference as one file. The raw files are also served individually under ",
+      h("code", {}, "data/"),
+      ", e.g. ",
+      link("data/references.json", h("code", {}, "data/references.json")),
+      ".",
+    ),
+    allDataDownloadButton(context),
   );
 }
 
@@ -141,14 +155,22 @@ export function referencesPage(
   params: URLSearchParams,
 ): HTMLElement {
   const citedBy = new Map<string, string[]>();
+  const untracedCounts = new Map<string, number>();
   const cite = (ref: string, id: string): void => {
     const list = citedBy.get(ref) ?? [];
     if (!list.includes(id)) list.push(id);
     citedBy.set(ref, list);
   };
   for (const item of context.catalog.items) {
-    for (const record of Object.values(item.properties))
-      if (record?.ref !== undefined) cite(record.ref, item.id);
+    for (const record of Object.values(item.properties)) {
+      if (record?.ref === undefined) continue;
+      cite(record.ref, item.id);
+      if (record.untraced)
+        untracedCounts.set(
+          record.ref,
+          (untracedCounts.get(record.ref) ?? 0) + 1,
+        );
+    }
     for (const ref of item.entry?.seeAlso ?? []) cite(ref, item.id);
   }
   const highlighted = params.get("ref");
@@ -175,11 +197,21 @@ export function referencesPage(
               h(
                 "div",
                 { class: "muted" },
-                "Cited for: ",
-                ...(citedBy.get(key) ?? []).flatMap((id, i) => [
-                  i > 0 ? ", " : "",
-                  link(polyominoHref(id), id),
-                ]),
+                `Cited for ${citedBy.get(key)?.length ?? 0} polyominoes: `,
+                ...(citedBy.get(key) ?? [])
+                  .slice(0, MAX_LISTED_CITATIONS)
+                  .flatMap((id, i) => [
+                    i > 0 ? ", " : "",
+                    link(polyominoHref(id), id),
+                  ]),
+                (citedBy.get(key)?.length ?? 0) > MAX_LISTED_CITATIONS &&
+                  ", ...",
+                untracedCounts.has(key) &&
+                  h(
+                    "div",
+                    {},
+                    `${untracedCounts.get(key)} results citing this as their data source still need their first publication traced.`,
+                  ),
               ),
           ),
         ),

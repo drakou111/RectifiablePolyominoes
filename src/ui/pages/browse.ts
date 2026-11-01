@@ -7,6 +7,7 @@ import {
 import { polyominoHref, type SiteContext } from "../context";
 import { h, link, type Child } from "../dom";
 import { formatProperty } from "../format";
+import { allDataDownloadButton } from "../download";
 import { renderPolyomino } from "../render";
 
 const PAGE_SIZE = 100;
@@ -339,6 +340,7 @@ export function browsePage(
       "Facts that follow from the shape alone (holes, rectangles) are filled in automatically.",
     ),
     controls,
+    h("p", {}, allDataDownloadButton(context)),
     results,
   );
 }

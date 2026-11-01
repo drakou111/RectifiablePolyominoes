@@ -40,6 +40,7 @@ const PROPERTY_FIELDS = new Set([
   "refDetail",
   "reason",
   "note",
+  "untraced",
 ]);
 const ENTRY_FIELDS = new Set(["id", "names", "note", "seeAlso", "properties"]);
 const TILING_FIELDS = new Set(["width", "height", "placements", "ref", "note"]);
@@ -266,6 +267,10 @@ class Validator {
       )
         this.error(at, "lower bound exceeds upper bound");
       this.checkReference(at, record.ref);
+      if (record.untraced !== undefined && record.untraced !== true)
+        this.error(at, "untraced must be true when present");
+      if (record.untraced && record.ref === undefined)
+        this.error(at, "untraced needs the ref of the data source");
       const derivedRecord = derived[key as PropertyKey];
       if (
         derivedRecord !== undefined &&
