@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+.env
+.env.*
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+scratch/
+output/
+.claude/
+CLAUDE.md
+CLAUDE.local.md
