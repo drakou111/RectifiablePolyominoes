@@ -62,3 +62,17 @@ describe("cornerTest", () => {
     },
   );
 });
+
+describe("tileRectangle with a color limit", () => {
+  it("finds a 2-colorable L tetromino tiling", () => {
+    expect(tileRectangle(Polyomino.fromId("e080"), 2, 4, BUDGET, 2).kind).toBe(
+      "found",
+    );
+  });
+
+  it("respects a generous color limit", () => {
+    expect(tileRectangle(Polyomino.fromId("e040"), 4, 4, BUDGET, 4).kind).toBe(
+      "found",
+    );
+  });
+});

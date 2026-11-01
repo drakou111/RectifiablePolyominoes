@@ -15,6 +15,16 @@
       "refDetail": "solution-2d",
       "untraced": true
     },
+    "oddOrder": {
+      "status": "open",
+      "lower": 469,
+      "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
+    },
+    "smallestSquare": {
+      "status": "open",
+      "lower": 92,
+      "note": "Every smaller square was ruled out by exhaustive search."
+    },
     "minColors": {
       "status": "open",
       "upper": 4,

@@ -70,6 +70,7 @@ const isRectangleSize = (value: unknown): boolean =>
 function checkValue(key: PropertyKey, value: unknown): string | undefined {
   switch (key) {
     case "rectifiable":
+    case "tilesHalfStrip":
     case "tilesPlane":
       return typeof value === "boolean" ? undefined : "must be true or false";
     case "order":
@@ -285,6 +286,19 @@ class Validator {
 
     const effective: Properties = { ...derived, ...(properties as Properties) };
     const rectifiable = effective.rectifiable?.value;
+    if (rectifiable === true && effective.tilesHalfStrip?.value === false)
+      this.error(
+        where,
+        "tiles a rectangle but is recorded as not tiling a half-strip",
+      );
+    if (
+      effective.tilesHalfStrip?.value === true &&
+      effective.tilesPlane?.value === false
+    )
+      this.error(
+        where,
+        "tiles a half-strip but is recorded as not tiling the plane",
+      );
     if (rectifiable === true && effective.tilesPlane?.value === false)
       this.error(
         where,

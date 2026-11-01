@@ -7,6 +7,18 @@
       "ref": "dahlke-trec",
       "refDetail": "theorems/hexlist-2d",
       "untraced": true
+    },
+    "tilesHalfStrip": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": false,
+      "reason": "No arrangement of copies fills the 6 x 6 corner of any rectangle or half-strip (exhaustive search)."
+    },
+    "tilesPlane": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": true,
+      "reason": "A periodic tiling exists with 1 copies per period (period lattice (3, 0), (1, 2))."
     }
   }
 }

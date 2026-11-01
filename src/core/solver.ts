@@ -36,6 +36,7 @@ export function tileRectangle(
   width: number,
   height: number,
   stepBudget: number,
+  colorLimit?: number,
 ): SearchResult<Placement[]> {
   const area = width * height;
   if (area % polyomino.size !== 0) return { kind: "impossible" };
@@ -72,7 +73,25 @@ export function tileRectangle(
       ] = value;
   };
 
-  const search = (from: number): boolean | "budget" => {
+  // With a color limit, every copy also gets a color, and copies sharing an edge must differ.
+  const touchesColor = (
+    shape: Shape,
+    left: number,
+    top: number,
+    value: number,
+  ): boolean => {
+    for (let i = 0; i < shape.xs.length; i++) {
+      const cx = left + (shape.xs[i] as number);
+      const cy = top + (shape.ys[i] as number);
+      if (cx > 0 && grid[cy * width + cx - 1] === value) return true;
+      if (cx + 1 < width && grid[cy * width + cx + 1] === value) return true;
+      if (cy > 0 && grid[(cy - 1) * width + cx] === value) return true;
+      if (cy + 1 < height && grid[(cy + 1) * width + cx] === value) return true;
+    }
+    return false;
+  };
+
+  const search = (from: number, colorsUsed: number): boolean | "budget" => {
     let cell = from;
     while (cell < area && grid[cell]) cell++;
     if (cell === area) return true;
@@ -82,17 +101,25 @@ export function tileRectangle(
     for (const shape of shapes) {
       const left = x - shape.anchorX;
       if (!fits(shape, left, y)) continue;
-      mark(shape, left, y, 1);
-      placements.push({ o: shape.o, x: left, y });
-      const result = search(cell + 1);
-      if (result !== false) return result;
-      placements.pop();
-      mark(shape, left, y, 0);
+      // Colors are interchangeable, so a new color is only ever the next unused one.
+      const choices =
+        colorLimit === undefined ? 1 : Math.min(colorLimit, colorsUsed + 1);
+      for (let color = 0; color < choices; color++) {
+        const value = color + 1;
+        if (colorLimit !== undefined && touchesColor(shape, left, y, value))
+          continue;
+        mark(shape, left, y, value);
+        placements.push({ o: shape.o, x: left, y });
+        const result = search(cell + 1, Math.max(colorsUsed, color + 1));
+        if (result !== false) return result;
+        placements.pop();
+        mark(shape, left, y, 0);
+      }
     }
     return false;
   };
 
-  const result = search(0);
+  const result = search(0, 0);
   if (result === "budget") return { kind: "budget" };
   return result ? { kind: "found", value: placements } : { kind: "impossible" };
 }

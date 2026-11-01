@@ -61,6 +61,63 @@ function anchoredShapes(polyomino: Polyomino): AnchoredShape[] {
   return result;
 }
 
+interface SweepContext {
+  readonly shapes: readonly AnchoredShape[];
+  readonly height: number;
+  readonly strict: boolean;
+  readonly full: number;
+}
+
+/**
+ * Every way to complete the band cells of the current column (state[0]), lowest empty cell
+ * first. Calls onDone with the finished state and the copies placed (anchored at `column`);
+ * onDone returns true to stop the enumeration.
+ */
+function fillColumn(
+  context: SweepContext,
+  state: Int32Array,
+  column: number,
+  placed: Placement[],
+  onDone: (done: Int32Array, placed: Placement[]) => boolean,
+): boolean {
+  const { shapes, height, strict, full } = context;
+  const current = state[0] as number;
+  if (current === full) return onDone(state, placed);
+  let y = 0;
+  while ((current >> y) & 1) y++;
+  for (const shape of shapes) {
+    let ok = true;
+    for (let i = 0; i < shape.dx.length && ok; i++) {
+      const rel = shape.dx[i] as number;
+      const row = y + (shape.dy[i] as number);
+      if (row < 0 || column + rel < 0) ok = false;
+      else if (row >= height) ok = !strict;
+      else if (rel < 0)
+        ok = false; // band cells of finished columns are taken
+      else if (((state[rel] as number) >> row) & 1) ok = false;
+    }
+    if (!ok) continue;
+    const after = Int32Array.from(state);
+    for (let i = 0; i < shape.dx.length; i++) {
+      const row = y + (shape.dy[i] as number);
+      if (row < height)
+        after[shape.dx[i] as number] =
+          (after[shape.dx[i] as number] as number) | (1 << row);
+    }
+    placed.push({ o: shape.o, x: column + shape.left, y: y + shape.top });
+    const stop = fillColumn(context, after, column, placed, onDone);
+    placed.pop();
+    if (stop) return true;
+  }
+  return false;
+}
+
+function shiftColumns(state: Int32Array): Int32Array {
+  const shifted = new Int32Array(state.length);
+  for (let i = 1; i < state.length; i++) shifted[i - 1] = state[i] as number;
+  return shifted;
+}
+
 interface StoredState {
   readonly parent: string | undefined;
   /** Placements made in this step, in absolute coordinates (y measured from the bottom wall). */
@@ -94,77 +151,36 @@ export function sweepStrip(
     { key: startKey, masks: start, column: 0 },
   ];
 
+  const context: SweepContext = { shapes, height, strict, full };
   while (frontier.length > 0) {
     const next: typeof frontier = [];
     for (const { key, masks, column } of frontier) {
-      const placed: Placement[] = [];
-      let hitLimit = false;
-      let found: StripVerdict | undefined;
-
-      const fill = (state: Int32Array): void => {
-        if (hitLimit || found !== undefined) return;
-        const current = state[0] as number;
-        if (current === full) {
-          const shifted = new Int32Array(reach);
-          for (let i = 1; i < reach; i++) shifted[i - 1] = state[i] as number;
-          const nextColumn = column + 1;
-          const nextKey = encode(shifted, nextColumn);
-          if (seen.has(nextKey)) return;
-          if (seen.size >= maxStates) {
-            hitLimit = true;
-            return;
-          }
-          seen.set(nextKey, {
-            parent: key,
-            placed: keepTiling ? [...placed] : undefined,
-          });
-          if (shifted.every((mask) => mask === 0)) {
-            found = {
-              kind: "reachable",
-              width: nextColumn,
-              placements: keepTiling ? rebuild(seen, nextKey) : undefined,
-            };
-            return;
-          }
-          next.push({ key: nextKey, masks: shifted, column: nextColumn });
-          return;
+      let result: StripVerdict | undefined;
+      fillColumn(context, masks, column, [], (done, placed) => {
+        const shifted = shiftColumns(done);
+        const nextColumn = column + 1;
+        const nextKey = encode(shifted, nextColumn);
+        if (seen.has(nextKey)) return false;
+        if (seen.size >= maxStates) {
+          result = { kind: "limit" };
+          return true;
         }
-        let y = 0;
-        while ((current >> y) & 1) y++;
-        for (const shape of shapes) {
-          let ok = true;
-          for (let i = 0; i < shape.dx.length && ok; i++) {
-            const rel = shape.dx[i] as number;
-            const row = y + (shape.dy[i] as number);
-            if (row < 0 || column + rel < 0) ok = false;
-            else if (row >= height) ok = !strict;
-            else if (rel < 0)
-              ok = false; // band cells of finished columns are taken
-            else if (((state[rel] as number) >> row) & 1) ok = false;
-          }
-          if (!ok) continue;
-          const after = Int32Array.from(state);
-          for (let i = 0; i < shape.dx.length; i++) {
-            const row = y + (shape.dy[i] as number);
-            if (row < height)
-              after[shape.dx[i] as number] =
-                (after[shape.dx[i] as number] as number) | (1 << row);
-          }
-          if (keepTiling)
-            placed.push({
-              o: shape.o,
-              x: column + shape.left,
-              y: y + shape.top,
-            });
-          fill(after);
-          if (keepTiling) placed.pop();
-          if (hitLimit || found !== undefined) return;
+        seen.set(nextKey, {
+          parent: key,
+          placed: keepTiling ? [...placed] : undefined,
+        });
+        if (shifted.every((mask) => mask === 0)) {
+          result = {
+            kind: "reachable",
+            width: nextColumn,
+            placements: keepTiling ? rebuild(seen, nextKey) : undefined,
+          };
+          return true;
         }
-      };
-
-      fill(masks);
-      if (found !== undefined) return found;
-      if (hitLimit) return { kind: "limit" };
+        next.push({ key: nextKey, masks: shifted, column: nextColumn });
+        return false;
+      });
+      if (result !== undefined) return result;
     }
     frontier = next;
   }
@@ -222,6 +238,122 @@ export function stripProof(
     const band = sweepStrip(polyomino, height, false, maxStates);
     if (band.kind === "unreachable")
       return { kind: "no-rectangle", bandHeight: height, states: band.states };
+  }
+  return { kind: "undecided" };
+}
+
+export type InfinitePathVerdict =
+  | { readonly kind: "infinite"; readonly states: number }
+  | { readonly kind: "finite"; readonly states: number }
+  | { readonly kind: "limit" };
+
+/**
+ * Does the strict sweep have an infinite path from the start (a reachable cycle)? Such a path is
+ * a tiling of a half-strip of width `height`: walls on both long sides and at its end. (Band mode
+ * is accepted for completeness, but an infinite band path proves nothing.)
+ */
+export function sweepInfinitePath(
+  polyomino: Polyomino,
+  height: number,
+  strict: boolean,
+  maxStates: number,
+): InfinitePathVerdict {
+  if (height > 30) throw new Error("band height above 30 is not supported");
+  const shapes = anchoredShapes(polyomino);
+  const reach = Math.max(polyomino.width, polyomino.height);
+  const context: SweepContext = {
+    shapes,
+    height,
+    strict,
+    full: (1 << height) - 1,
+  };
+
+  const ids = new Map<string, number>();
+  const successors: number[][] = [];
+  const queue: { masks: Int32Array; column: number }[] = [];
+  const intern = (masks: Int32Array, column: number): number | undefined => {
+    const key = stripStateKey(masks, Math.min(column, reach));
+    const known = ids.get(key);
+    if (known !== undefined) return known;
+    if (ids.size >= maxStates) return undefined;
+    const id = ids.size;
+    ids.set(key, id);
+    successors.push([]);
+    queue.push({ masks, column: Math.min(column, reach) });
+    return id;
+  };
+
+  intern(new Int32Array(reach), 0);
+  for (let current = 0; current < queue.length; current++) {
+    const { masks, column } = queue[current] as {
+      masks: Int32Array;
+      column: number;
+    };
+    let overflow = false;
+    fillColumn(context, masks, column, [], (done) => {
+      const id = intern(shiftColumns(done), column + 1);
+      if (id === undefined) {
+        overflow = true;
+        return true;
+      }
+      const list = successors[current] as number[];
+      if (!list.includes(id)) list.push(id);
+      return false;
+    });
+    if (overflow) return { kind: "limit" };
+  }
+
+  // Peel off states without successors until none are left (finite) or a cycle core remains.
+  const count = successors.length;
+  const outDegree = Int32Array.from(successors, (list) => list.length);
+  const predecessors: number[][] = Array.from({ length: count }, () => []);
+  successors.forEach((list, from) => {
+    for (const to of list) predecessors[to]?.push(from);
+  });
+  const dead: number[] = [];
+  for (let id = 0; id < count; id++) if (outDegree[id] === 0) dead.push(id);
+  let removed = 0;
+  while (dead.length > 0) {
+    const id = dead.pop() as number;
+    removed++;
+    for (const from of predecessors[id] ?? []) {
+      const left = (outDegree[from] as number) - 1;
+      outDegree[from] = left;
+      if (left === 0) dead.push(from);
+    }
+  }
+  return removed === count
+    ? { kind: "finite", states: count }
+    : { kind: "infinite", states: count };
+}
+
+export type HalfStripProof =
+  | { readonly kind: "half-strip"; readonly width: number }
+  | {
+      readonly kind: "no-half-strip";
+      readonly bandHeight: number;
+      readonly states: number;
+    }
+  | { readonly kind: "undecided" };
+
+/**
+ * Half-strips of width h are decided exactly by the strict sweep. For all widths at once: the
+ * band sweep along a wall runs between two perpendicular walls and needs `height` rows of depth,
+ * and the end of every half-strip is such a wall. So an unreachable band state rules out
+ * half-strips of every width (and hence every rectangle).
+ */
+export function halfStripProof(
+  polyomino: Polyomino,
+  maxHeight: number,
+  maxStates: number,
+): HalfStripProof {
+  const minSide = Math.min(polyomino.width, polyomino.height);
+  for (let height = minSide; height <= maxHeight; height++) {
+    const exact = sweepInfinitePath(polyomino, height, true, maxStates);
+    if (exact.kind === "infinite") return { kind: "half-strip", width: height };
+    const band = sweepStrip(polyomino, height, false, maxStates);
+    if (band.kind === "unreachable")
+      return { kind: "no-half-strip", bandHeight: height, states: band.states };
   }
   return { kind: "undecided" };
 }

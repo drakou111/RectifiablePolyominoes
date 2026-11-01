@@ -15,12 +15,22 @@
       "refDetail": "solution-2d",
       "untraced": true
     },
+    "oddOrder": {
+      "status": "open",
+      "lower": 247,
+      "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
+    },
     "smallestRectangles": {
       "status": "proven",
       "ref": "reid-rectifiable-data",
       "refDetail": "8omino11_rect.html",
       "untraced": true,
       "value": [[41, 48]]
+    },
+    "smallestSquare": {
+      "status": "open",
+      "lower": 45,
+      "note": "Every smaller square was ruled out by exhaustive search."
     },
     "primeRectangles": {
       "status": "proven",

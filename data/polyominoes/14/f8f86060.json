@@ -31,6 +31,11 @@
       "untraced": true,
       "value": [[63, 80]]
     },
+    "smallestSquare": {
+      "status": "open",
+      "lower": 71,
+      "note": "Every smaller square was ruled out by exhaustive search."
+    },
     "primeRectangles": {
       "status": "proven",
       "ref": "reid-rectifiable-data",

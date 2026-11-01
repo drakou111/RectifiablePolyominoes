@@ -16,12 +16,22 @@
       "refDetail": "theorems/hexlist-2d",
       "untraced": true
     },
+    "oddOrder": {
+      "status": "open",
+      "lower": 93,
+      "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
+    },
     "smallestRectangles": {
       "status": "proven",
       "ref": "reid-rectifiable-data",
       "refDetail": "y6_rect.html",
       "untraced": true,
       "value": [[23, 24]]
+    },
+    "smallestSquare": {
+      "status": "open",
+      "lower": 24,
+      "note": "Every smaller square was ruled out by exhaustive search."
     },
     "primeRectangles": {
       "status": "proven",

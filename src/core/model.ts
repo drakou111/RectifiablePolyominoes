@@ -25,6 +25,7 @@ export interface PropertyValues {
   readonly smallestRectangles: readonly RectangleSize[];
   readonly smallestSquare: number | "none";
   readonly primeRectangles: PrimeRectangles;
+  readonly tilesHalfStrip: boolean;
   readonly tilesPlane: boolean;
   readonly minColors: number;
 }
@@ -148,6 +149,13 @@ export const PROPERTY_DEFINITIONS: readonly PropertyDefinition[] = [
     label: "Prime rectangles",
     description:
       "Tileable rectangles that cannot be cut into two smaller tileable rectangles.",
+    numeric: false,
+  },
+  {
+    key: "tilesHalfStrip",
+    label: "Tiles a half-strip",
+    description:
+      "Copies tile a half-strip: the region between two parallel walls, closed at one end and infinite in the other direction.",
     numeric: false,
   },
   {

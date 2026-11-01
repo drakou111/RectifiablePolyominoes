@@ -29,6 +29,12 @@
       "untraced": true,
       "value": [[2, 9]]
     },
+    "smallestSquare": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": 18,
+      "reason": "Every smaller square whose area is a multiple of the piece size was searched exhaustively."
+    },
     "primeRectangles": {
       "status": "proven",
       "ref": "reid-rectifiable-data",

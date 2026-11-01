@@ -1,0 +1,20 @@
+{
+  "width": 12,
+  "height": 12,
+  "ref": "site-solver",
+  "note": "Smallest square, found by exhaustive search (tools/squares.ts).",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 1, "x": 4, "y": 0 },
+    { "o": 1, "x": 8, "y": 0 },
+    { "o": 7, "x": 6, "y": 1 },
+    { "o": 4, "x": 1, "y": 2 },
+    { "o": 0, "x": 0, "y": 4 },
+    { "o": 2, "x": 7, "y": 4 },
+    { "o": 5, "x": 2, "y": 6 },
+    { "o": 6, "x": 6, "y": 6 },
+    { "o": 3, "x": 0, "y": 7 },
+    { "o": 3, "x": 4, "y": 7 },
+    { "o": 2, "x": 7, "y": 8 }
+  ]
+}

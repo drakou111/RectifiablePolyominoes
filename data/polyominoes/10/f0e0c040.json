@@ -1,0 +1,11 @@
+{
+  "id": "f0e0c040",
+  "properties": {
+    "tilesPlane": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": true,
+      "reason": "A periodic tiling exists with 2 copies per period (period lattice (4, 0), (0, 5))."
+    }
+  }
+}

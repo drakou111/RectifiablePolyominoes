@@ -15,6 +15,17 @@
       "refDetail": "solution-2d",
       "untraced": true
     },
+    "oddOrder": {
+      "status": "open",
+      "lower": 47,
+      "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
+    },
+    "smallestSquare": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": 12,
+      "reason": "Every smaller square whose area is a multiple of the piece size was searched exhaustively."
+    },
     "minColors": {
       "status": "open",
       "upper": 4,

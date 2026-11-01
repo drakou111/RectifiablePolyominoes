@@ -6,6 +6,18 @@
       "ref": "site-solver",
       "value": false,
       "reason": "Column sweep along a wall: no rectangle of height below 10 exists (exact search), and with a band of height 10 the edge can never be completed flat again, whatever the width (282080 states explored)."
+    },
+    "tilesHalfStrip": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": false,
+      "reason": "A column sweep along the closed end, 10 rows deep, can never reach the far wall flat, for any width (282080 states)."
+    },
+    "tilesPlane": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": true,
+      "reason": "A periodic tiling exists with 1 copies per period (period lattice (10, 0), (1, 1))."
     }
   }
 }

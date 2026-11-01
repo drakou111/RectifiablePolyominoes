@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { Polyomino } from "../src/core/polyomino";
-import { stripProof, stripStateKey, sweepStrip } from "../src/core/strip";
+import {
+  halfStripProof,
+  stripProof,
+  stripStateKey,
+  sweepStrip,
+} from "../src/core/strip";
 import { expandTiling } from "../src/core/tiling";
 
 const MAX_STATES = 1_000_000;
@@ -66,5 +71,22 @@ describe("tall bands", { timeout: 60_000 }, () => {
   it("never rules out a rectifiable piece with a tall band", () => {
     const band = sweepStrip(Polyomino.fromId("f040"), 18, false, MAX_STATES);
     expect(band.kind).not.toBe("unreachable");
+  });
+});
+
+describe("half-strips", () => {
+  it.each(["e080", "e040", "f040"])(
+    "finds a half-strip for the rectifiable %s",
+    (id) => {
+      expect(halfStripProof(Polyomino.fromId(id), 8, MAX_STATES).kind).toBe(
+        "half-strip",
+      );
+    },
+  );
+
+  it.each(["40e040", "e0a0", "c060"])("rules out half-strips for %s", (id) => {
+    expect(halfStripProof(Polyomino.fromId(id), 8, MAX_STATES).kind).toBe(
+      "no-half-strip",
+    );
   });
 });

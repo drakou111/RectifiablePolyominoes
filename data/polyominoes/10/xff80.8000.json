@@ -15,12 +15,23 @@
       "untraced": true,
       "value": 2
     },
+    "oddOrder": {
+      "status": "open",
+      "lower": 31,
+      "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
+    },
     "smallestRectangles": {
       "status": "proven",
       "ref": "reid-rectifiable-data",
       "refDetail": "10omino01_rect.html",
       "untraced": true,
       "value": [[2, 10]]
+    },
+    "smallestSquare": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": 10,
+      "reason": "Every smaller square whose area is a multiple of the piece size was searched exhaustively."
     },
     "primeRectangles": {
       "status": "proven",

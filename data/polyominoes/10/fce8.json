@@ -6,6 +6,18 @@
       "ref": "site-solver",
       "value": false,
       "reason": "No arrangement of copies fills the 8 x 8 corner region of any rectangle (exhaustive search over all rectangle sizes)."
+    },
+    "tilesHalfStrip": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": false,
+      "reason": "No arrangement of copies fills the 8 x 8 corner of any rectangle or half-strip (exhaustive search)."
+    },
+    "tilesPlane": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": true,
+      "reason": "A periodic tiling exists with 2 copies per period (period lattice (5, 0), (2, 4))."
     }
   }
 }

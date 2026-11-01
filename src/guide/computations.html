@@ -59,6 +59,30 @@
   tetromino, and it was run with bands of up to 14 rows.
 </p>
 
+<h2>Half-strips</h2>
+<p>
+  A half-strip is the region between two parallel walls, closed by a third wall
+  at one end. The strict sweep with walls on both long sides decides a
+  half-strip of one width exactly: it tiles if and only if the sweep can go on
+  forever, that is, if its state graph has a cycle reachable from the start. For
+  all widths at once, the band sweep is run along the closed end: it needs a
+  wall with perpendicular walls at both ends and enough depth, which every
+  half-strip provides. If the band sweep can never finish flat, no half-strip of
+  any width can be tiled. A blocked corner test rules out half-strips in the
+  same way.
+</p>
+
+<h2>Plane tilings</h2>
+<p>
+  A tiling of a torus (the plane modulo a lattice) repeats into a periodic
+  tiling of the plane. The search tries every lattice whose fundamental domain
+  holds up to a few copies. For the other direction, if no arrangement of copies
+  covers a square, even with copies sticking out on every side, the piece does
+  not tile the plane, since every plane tiling covers every square. On
+  heptominoes and octominoes these two tests agree with the known numbers of
+  pieces that tile the plane.
+</p>
+
 <h2>Width-2 pieces</h2>
 <p>
   The pieces of width 2 that remained undecided were settled with Dahlke's Gun

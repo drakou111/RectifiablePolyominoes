@@ -14,6 +14,7 @@ const formatRectangle = ([width, height]: RectangleSize): string =>
 export function formatValue(key: PropertyKey, value: unknown): string {
   switch (key) {
     case "rectifiable":
+    case "tilesHalfStrip":
     case "tilesPlane":
       return value ? "yes" : "no";
     case "smallestRectangles":

@@ -43,6 +43,7 @@ const TABLE_COLUMNS: readonly {
   { key: "oddOrder", label: "Odd order" },
   { key: "smallestRectangles", label: "Smallest rectangles" },
   { key: "minColors", label: "Fewest colors" },
+  { key: "tilesHalfStrip", label: "Tiles a half-strip" },
   { key: "tilesPlane", label: "Tiles the plane" },
 ];
 
