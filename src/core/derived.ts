@@ -9,6 +9,22 @@ function greatestCommonDivisor(a: number, b: number): number {
   return b === 0 ? a : greatestCommonDivisor(b, a % b);
 }
 
+/** Facts that follow from other recorded properties. */
+export function inferProperties(properties: Properties): Properties {
+  if (
+    properties.rectifiable?.value !== true ||
+    properties.tilesPlane !== undefined
+  )
+    return {};
+  return {
+    tilesPlane: {
+      status: "proven",
+      value: true,
+      reason: "It tiles a rectangle, and rectangles tile the plane.",
+    },
+  };
+}
+
 /** Facts that follow from the shape alone, so nobody has to enter them by hand. */
 export function deriveProperties(polyomino: Polyomino): Properties {
   if (polyomino.hasHole()) {

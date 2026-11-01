@@ -6,7 +6,7 @@ import {
 } from "../../core/polyomino";
 import { polyominoHref, type SiteContext } from "../context";
 import { h, link, type Child } from "../dom";
-import { formatProperty } from "../format";
+import { answerClass, formatProperty } from "../format";
 import { allDataDownloadButton } from "../download";
 import { renderPolyomino } from "../render";
 
@@ -143,7 +143,11 @@ function propertyCell(
   if (record === undefined) return h("td", { class: "unknown" }, "-");
   return h(
     "td",
-    { class: `status-${record.status}` },
+    {
+      class: [`status-${record.status}`, answerClass(record.value)]
+        .filter(Boolean)
+        .join(" "),
+    },
     formatProperty(key, record),
   );
 }

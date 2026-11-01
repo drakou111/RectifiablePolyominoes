@@ -6,7 +6,12 @@ import { expandTiling } from "../../core/tiling";
 import { loadTiling } from "../../data";
 import type { SiteContext } from "../context";
 import { append, h, link } from "../dom";
-import { citationLink, formatProperty, statusBadge } from "../format";
+import {
+  answerClass,
+  citationLink,
+  formatProperty,
+  statusBadge,
+} from "../format";
 import { polyominoDownloadButton } from "../download";
 import {
   COLOR_MODES,
@@ -34,7 +39,7 @@ function propertiesTable(
               record.refDetail,
             )
           : derived
-            ? h("span", { class: "muted" }, "follows from the shape")
+            ? h("span", { class: "muted" }, "derived automatically")
             : null;
     return h(
       "tr",
@@ -49,7 +54,11 @@ function propertiesTable(
         {},
         record === undefined
           ? h("span", { class: "muted" }, "no data")
-          : formatProperty(definition.key, record),
+          : h(
+              "span",
+              { class: answerClass(record.value) },
+              formatProperty(definition.key, record),
+            ),
       ),
       h(
         "td",

@@ -1,5 +1,9 @@
 import { compareIds, enumerateFreePolyominoes } from "./enumerate";
-import { deriveProperties } from "./derived";
+import { deriveProperties, inferProperties } from "./derived";
+
+function withInferred(properties: Properties): Properties {
+  return { ...properties, ...inferProperties(properties) };
+}
 import type { PolyominoEntry, Properties, PropertyKey } from "./model";
 import { Polyomino, type SymmetryGroup } from "./polyomino";
 
@@ -58,8 +62,13 @@ export class Catalog {
         polyomino,
         size: polyomino.size,
         entry,
-        properties: { ...derived, ...entry?.properties },
-        derivedKeys: new Set(Object.keys(derived) as PropertyKey[]),
+        properties: withInferred({ ...derived, ...entry?.properties }),
+        derivedKeys: new Set([
+          ...(Object.keys(derived) as PropertyKey[]),
+          ...(Object.keys(
+            inferProperties({ ...derived, ...entry?.properties }),
+          ) as PropertyKey[]),
+        ]),
         symmetry: polyomino.symmetryGroup(),
         hasHole: polyomino.hasHole(),
         tilings: (tilingsById.get(id) ?? []).sort(

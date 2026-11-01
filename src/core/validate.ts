@@ -285,6 +285,11 @@ class Validator {
 
     const effective: Properties = { ...derived, ...(properties as Properties) };
     const rectifiable = effective.rectifiable?.value;
+    if (rectifiable === true && effective.tilesPlane?.value === false)
+      this.error(
+        where,
+        "tiles a rectangle but is recorded as not tiling the plane",
+      );
     if (rectifiable === false)
       for (const key of [
         "order",

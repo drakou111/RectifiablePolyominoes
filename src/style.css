@@ -11,6 +11,8 @@
   --open: #b26a00;
   --error: #b3261e;
   --tile-border: #1d1d1f;
+  --yes: #2e7d32;
+  --no: #c62828;
   color-scheme: light;
 }
 
@@ -28,6 +30,8 @@
     --open: #e9a94b;
     --error: #f0857d;
     --tile-border: #101012;
+    --yes: #7cc57f;
+    --no: #f0857d;
     color-scheme: dark;
   }
 }
@@ -128,6 +132,16 @@ th {
 td.status-open {
   color: var(--open);
   font-style: italic;
+}
+
+.answer-yes {
+  color: var(--yes);
+  font-weight: 600;
+}
+
+.answer-no {
+  color: var(--no);
+  font-weight: 600;
 }
 
 td.unknown {

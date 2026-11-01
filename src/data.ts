@@ -1,15 +1,10 @@
 import { Catalog, parseTilingPath } from "./core/catalog";
 import type { PolyominoEntry, Reference, TilingFile } from "./core/model";
+// All entry files as one module (see vite.config.ts): thousands of separate imports load slowly in dev.
+import entryList from "virtual:polyomino-entries";
 
 const DATA_PREFIX = "/data/";
 
-const entryModules: Record<string, PolyominoEntry> = import.meta.glob(
-  "/data/polyominoes/**/*.json",
-  {
-    eager: true,
-    import: "default",
-  },
-);
 const referenceModules: Record<
   string,
   Record<string, Reference>
@@ -26,7 +21,7 @@ const relative = (path: string): string => path.slice(DATA_PREFIX.length);
 
 export function loadCatalog(): Catalog {
   const entries = new Map<string, PolyominoEntry>();
-  for (const entry of Object.values(entryModules)) entries.set(entry.id, entry);
+  for (const entry of entryList) entries.set(entry.id, entry);
   const tilings = Object.keys(tilingLoaders).map((path) =>
     parseTilingPath(relative(path)),
   );

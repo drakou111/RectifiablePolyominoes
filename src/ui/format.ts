@@ -52,6 +52,8 @@ export function shortCitation(
   reference: Reference | undefined,
 ): string {
   if (reference === undefined) return key;
+  if (reference.kind === "website")
+    return `${reference.authors.join(", ")}, ${reference.title}`;
   const firstAuthor = reference.authors[0]?.split(" ").at(-1) ?? "";
   const authors =
     reference.authors.length > 2
@@ -102,6 +104,13 @@ export function fullCitation(reference: Reference): Child[] {
         "unchecked",
       ),
   ];
+}
+
+/** Class that colors yes/no answers, or undefined for other values. */
+export function answerClass(value: unknown): string | undefined {
+  if (value === true) return "answer-yes";
+  if (value === false) return "answer-no";
+  return undefined;
 }
 
 export function statusBadge(status: string): HTMLElement {
