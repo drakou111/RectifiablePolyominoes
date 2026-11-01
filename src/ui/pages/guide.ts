@@ -15,6 +15,7 @@ export const GUIDE_TOPICS: readonly GuideTopic[] = [
   { slug: "prime-rectangles", title: "Prime rectangles" },
   { slug: "plane", title: "Tiling the plane" },
   { slug: "colors", title: "Fewest colors" },
+  { slug: "computations", title: "Computed results" },
   { slug: "history", title: "History" },
   { slug: "data-format", title: "Data format and contributing" },
 ];

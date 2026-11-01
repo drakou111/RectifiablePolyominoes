@@ -1,0 +1,41 @@
+<p>
+  Results with status <em>computed</em> and the source "this catalogue's solver"
+  come from exhaustive searches run by <code>tools/solve.ts</code> in the site's
+  repository. A search that runs out of its step budget proves nothing and is
+  not recorded. Every search is exhaustive in the sense stated below, so the
+  results are proofs by computer, as reliable as the code.
+</p>
+
+<h2>Order and smallest rectangles</h2>
+<p>
+  For k = 2, 3, ... copies, every rectangle of area k times the piece size is
+  searched for a tiling, filling the first empty cell in reading order. The
+  first k for which some rectangle can be tiled is the order, because every
+  rectangle holding fewer copies was ruled out. All rectangles of that area are
+  searched, so the recorded smallest rectangles are complete, and a tiling of
+  each is stored.
+</p>
+
+<h2>Corner test</h2>
+<p>
+  The corner of any rectangle must be covered. For a depth <var>d</var>, the
+  test tries to cover every cell within <var>d</var> rows and columns of a
+  corner with copies that stay inside the rectangle. It does this for every
+  possible rectangle size near the corner: each side either shorter than
+  <var>d</var> (so the far wall is within reach) or at least <var>d</var> (then
+  the wall is ignored, which only allows more arrangements). If no arrangement
+  exists for any size, the piece tiles no rectangle.
+</p>
+<p>
+  The test is sound but not complete. Pieces such as the S tetromino force a
+  staircase that leaves any finite corner region, so the test cannot rule them
+  out; such pieces are listed as undecided until a stronger argument is entered.
+</p>
+
+<h2>Checks</h2>
+<p>
+  The solver was verified against Dahlke's complete list of orders through
+  hexominoes and against Reid's data for heptominoes and octominoes: every order
+  it can reach agrees, and the corner test never rejects a piece known to tile a
+  rectangle.
+</p>
