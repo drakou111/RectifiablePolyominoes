@@ -23,6 +23,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # The SAT tiler tests run a uv script (tools/sat); the native tests compile with g++.
+      - uses: astral-sh/setup-uv@v6
       - run: npm ci
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
