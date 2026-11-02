@@ -22,7 +22,7 @@ Usage: npx tsx tools/witnesses.ts [options]
 
   --kinds <list>     any of square,odd,prime (default all)
   --max-area <n>     skip rectangles larger than n cells (default no limit)
-  --budget <steps>   step budget of one rectangle search (default 50000000)
+  --budget <steps>   step budget of one rectangle search (default 20000000)
   --workers <n>      worker threads (default: all cores)
   --only <ids>       comma-separated IDs
   --dry-run          list the jobs only
@@ -45,7 +45,7 @@ for (const kind of kinds)
     throw new Error(`unknown kind "${kind}"; use ${ALL_KINDS.join(", ")}`);
 const maxArea = Number(argument("--max-area", String(Number.MAX_SAFE_INTEGER)));
 const parameters: WitnessParameters = {
-  stepBudget: Number(argument("--budget", "50000000")),
+  stepBudget: Number(argument("--budget", "20000000")),
 };
 const workerCount = Number(
   argument("--workers", String(availableParallelism())),
@@ -140,9 +140,9 @@ appendFileSync(
 );
 const tally = { found: 0, budget: 0, impossible: 0 };
 const NOTES: Record<WitnessJob["kind"], string> = {
-  square: "Smallest square, found by search (tools/witnesses.ts).",
-  odd: "Smallest odd tiling, found by search (tools/witnesses.ts).",
-  prime: "Prime rectangle, found by search (tools/witnesses.ts).",
+  square: "Smallest square, found by exact-cover search (tools/witnesses.ts).",
+  odd: "Smallest odd tiling, found by exact-cover search (tools/witnesses.ts).",
+  prime: "Prime rectangle, found by exact-cover search (tools/witnesses.ts).",
 };
 
 const record = (outcome: WitnessOutcome): void => {

@@ -1,6 +1,6 @@
 import type { Placement } from "../../src/core/model";
 import { Polyomino } from "../../src/core/polyomino";
-import { tileRectangle } from "../../src/core/solver";
+import { tileRectangleExactCover } from "../../src/core/exact-cover";
 
 export interface WitnessParameters {
   readonly stepBudget: number;
@@ -38,10 +38,9 @@ export function runWitnessJob(
   const polyomino = Polyomino.fromId(job.id);
   let budgetHit = false;
   for (const [a, b] of job.rectangles) {
-    // The solver fills row by row, so the narrow side as width keeps the frontier short.
     const width = Math.min(a, b);
     const height = Math.max(a, b);
-    const result = tileRectangle(
+    const result = tileRectangleExactCover(
       polyomino,
       width,
       height,
