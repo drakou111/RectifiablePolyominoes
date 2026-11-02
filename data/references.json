@@ -213,9 +213,9 @@
   },
   "contributed-classification": {
     "kind": "website",
-    "authors": ["Contributed computation"],
+    "authors": ["mathmasterzach"],
     "title": "Rectifiability of every free polyomino with 11, 12 and 13 cells",
-    "venue": "classification files supplied to this catalogue in 2026; the author's name is to be added",
+    "venue": "classification files supplied to this catalogue in 2026",
     "url": "#/sizes",
     "checked": false
   }
