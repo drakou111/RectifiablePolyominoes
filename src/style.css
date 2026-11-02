@@ -89,6 +89,12 @@ pre {
   overflow-x: auto;
 }
 
+.subtitle {
+  margin-top: -0.4rem;
+  font-size: 1.15em;
+  color: var(--muted);
+}
+
 .muted {
   color: var(--muted);
   font-size: 0.9em;

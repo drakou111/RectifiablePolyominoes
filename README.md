@@ -1,4 +1,4 @@
-# Rectangle Tilings
+# Rectifiable Polyominoes
 
 A static website cataloguing which polyominoes tile rectangles: order, odd order, smallest rectangles and squares, prime rectangles, plane tilings and the fewest colors a rectangle tiling needs, each linked to its first publication. Every free polyomino up to 10 cells gets a page. Data is hand-entered JSON in `data/`, checked by the test suite. Built with TypeScript and Vite, hosted on GitHub Pages.
 

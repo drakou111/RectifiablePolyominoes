@@ -205,7 +205,7 @@
   },
   "site-solver": {
     "kind": "website",
-    "authors": ["Rectangle Tilings catalogue"],
+    "authors": ["Rectifiable Polyominoes catalogue"],
     "title": "Exhaustive searches by this catalogue's solver (tools/solve.ts)",
     "venue": "this website; methods described in the guide page \"Computed results\"",
     "url": "#/guide/computations",

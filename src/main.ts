@@ -7,7 +7,7 @@ import { guidePage } from "./ui/pages/guide";
 import { polyominoPage } from "./ui/pages/polyomino";
 import { homePage, openProblemsPage, referencesPage } from "./ui/pages/simple";
 
-const SITE_TITLE = "Rectangle Tilings";
+const SITE_TITLE = "Rectifiable Polyominoes";
 
 const main = document.querySelector("main");
 if (main === null) throw new Error("index.html needs a <main> element");

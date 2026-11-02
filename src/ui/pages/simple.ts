@@ -29,7 +29,8 @@ export function homePage(context: SiteContext): HTMLElement {
   return h(
     "section",
     {},
-    h("h1", {}, "Polyominoes that tile rectangles"),
+    h("h1", {}, "Rectifiable Polyominoes"),
+    h("p", { class: "subtitle" }, "Polyominoes that tile rectangles"),
     h(
       "p",
       {},
