@@ -446,3 +446,22 @@ summary {
   padding: 0.6rem;
   flex: 0 1 220px;
 }
+
+/* Piece page: the order and smallest rectangle come first. */
+.lead {
+  margin: 1rem 0 1.5rem;
+}
+
+.lead-summary {
+  font-size: 1.15em;
+}
+
+.tiling-group details > summary {
+  cursor: pointer;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+
+.open-nav {
+  line-height: 1.8;
+}

@@ -20,6 +20,34 @@ import { renderPolyomino } from "../render";
 
 const PAGE_SIZE = 100;
 
+const SIZE_NAMES = [
+  "Monominoes",
+  "Dominoes",
+  "Trominoes",
+  "Tetrominoes",
+  "Pentominoes",
+  "Hexominoes",
+  "Heptominoes",
+  "Octominoes",
+  "Nonominoes",
+  "Decominoes",
+];
+
+/** Links to every n-omino of one size, sorted by order; `current` is shown unlinked. */
+export function sizeLinks(maxSize: number, current?: number): HTMLElement {
+  const parts: Child[] = [];
+  for (let size = 1; size <= maxSize; size++) {
+    const name = SIZE_NAMES[size - 1] ?? `${size}-ominoes`;
+    if (size > 1) parts.push(", ");
+    parts.push(
+      size === current
+        ? h("strong", {}, name)
+        : link(`#/browse?size=${size}&data=any&sort=order`, name),
+    );
+  }
+  return h("span", { class: "size-links" }, ...parts);
+}
+
 /** Property columns; `label` is the heading, `title` the full name shown on hover. */
 const PROPERTY_COLUMNS: readonly {
   readonly key: PropertyKey;
@@ -483,6 +511,16 @@ export function browsePage(
       "Facts that follow from the shape alone (holes, rectangles) are filled in automatically. ",
       "Click a column heading to sort by it, again to reverse; the menus under the headings filter the rows. ",
       allDataDownloadButton(context),
+    ),
+    h(
+      "p",
+      {},
+      "By size, sorted by order: ",
+      sizeLinks(
+        MAX_GENERATED_SIZE,
+        filters.size === "" ? undefined : Number(filters.size),
+      ),
+      ".",
     ),
     controls,
     results,

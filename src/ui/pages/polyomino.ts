@@ -14,11 +14,12 @@ import { ORIENTATION_COUNT, SYMMETRY_DESCRIPTIONS } from "../../core/polyomino";
 import { expandTiling } from "../../core/tiling";
 import { loadTiling } from "../../data";
 import type { SiteContext } from "../context";
-import { append, h, link } from "../dom";
+import { append, h, link, type Child } from "../dom";
 import {
   answerClass,
   citationLink,
-  formatProperty,
+  leadSummary,
+  summarizeProperty,
   statusBadge,
 } from "../format";
 import { polyominoDownloadButton } from "../download";
@@ -72,7 +73,7 @@ function propertiesTable(
           : h(
               "span",
               { class: answerClass(record.value) },
-              formatProperty(definition.key, record),
+              summarizeProperty(definition.key, record),
             ),
       ),
       h(
@@ -309,18 +310,7 @@ function tilingGroupSection(
   const missing = group.compact
     ? group.slots.filter((slot) => slot.ref === undefined)
     : [];
-  return h(
-    "section",
-    { class: "tiling-group", id: `tilings-${group.key}` },
-    h("h3", {}, group.title),
-    h(
-      "p",
-      { class: "muted" },
-      group.description,
-      group.slots.length > 1
-        ? ` ${stored.length} of ${group.slots.length} have a stored tiling.`
-        : "",
-    ),
+  const body = (): Child[] => [
     shown.length > 0 &&
       h(
         "div",
@@ -335,6 +325,47 @@ function tilingGroupSection(
         missing.map((slot) => slot.caption).join(", "),
         ".",
       ),
+  ];
+  const heading = [
+    h("h3", {}, group.title),
+    h(
+      "p",
+      { class: "muted" },
+      group.description,
+      group.slots.length > 1
+        ? ` ${stored.length} of ${group.slots.length} have a stored tiling.`
+        : "",
+    ),
+  ];
+  if (!group.compact)
+    return h(
+      "section",
+      { class: "tiling-group", id: `tilings-${group.key}` },
+      ...heading,
+      ...body(),
+    );
+  // A gallery of prime rectangles can hold hundreds of pictures: build it only when opened.
+  const details = h(
+    "details",
+    {},
+    h(
+      "summary",
+      {},
+      `Show all ${group.slots.length} ${group.slots.length === 1 ? "rectangle" : "rectangles"}`,
+    ),
+  );
+  details.addEventListener(
+    "toggle",
+    () => {
+      if (details.open) append(details, body());
+    },
+    { once: true },
+  );
+  return h(
+    "section",
+    { class: "tiling-group", id: `tilings-${group.key}` },
+    ...heading,
+    details,
   );
 }
 
@@ -368,13 +399,31 @@ export function polyominoPage(context: SiteContext, id: string): HTMLElement {
   for (const option of COLOR_MODES)
     modeSelect.append(h("option", { value: option.mode }, option.label));
 
-  const groups = groupTilings(item);
+  const allGroups = groupTilings(item);
+  const leadGroup = allGroups.find(
+    (group) => group.key === "smallestRectangles",
+  );
+  const groups = allGroups.filter((group) => group !== leadGroup);
   const pictureOptions: PictureOptions = {
     context,
     mode: () => mode,
     register: (redraw) => redraws.push(redraw),
     colorings: new Map(),
   };
+  const lead = h(
+    "section",
+    // Repeats elsewhere on the page link back here.
+    { class: "lead", id: "tilings-smallestRectangles" },
+    h("p", { class: "lead-summary" }, leadSummary(item)),
+    leadGroup !== undefined &&
+      h(
+        "div",
+        { class: "tiling-grid" },
+        ...leadGroup.slots.map((slot) =>
+          tilingCard(slot, leadGroup, pictureOptions),
+        ),
+      ),
+  );
   const tilings =
     groups.length === 0
       ? h(
@@ -467,6 +516,7 @@ export function polyominoPage(context: SiteContext, id: string): HTMLElement {
           ".",
         )
       : null,
+    lead,
     h("h2", {}, "Properties"),
     propertiesTable(item, context),
     orientationsFigure(item),

@@ -6,6 +6,7 @@ import type {
   RectangleSize,
   Reference,
 } from "../core/model";
+import type { CatalogItem } from "../core/catalog";
 import { h, link, type Child } from "./dom";
 
 const formatRectangle = ([width, height]: RectangleSize): string =>
@@ -28,6 +29,21 @@ export function formatValue(key: PropertyKey, value: unknown): string {
     default:
       return String(value);
   }
+}
+
+/**
+ * Like formatProperty, but a prime-rectangle list becomes its length: the full list can run to
+ * hundreds of rectangles and belongs in the tilings section.
+ */
+export function summarizeProperty(
+  key: PropertyKey,
+  record: PropertyRecord<unknown>,
+): string {
+  if (key !== "primeRectangles" || record.value === undefined)
+    return formatProperty(key, record);
+  const prime = record.value as PrimeRectangles;
+  const count = prime.rectangles.length;
+  return `${count} ${count === 1 ? "rectangle" : "rectangles"} (${prime.complete ? "complete list" : "list may be incomplete"})`;
 }
 
 /** Value, or bounds while open: "open", "open, at least 76", "open, between 3 and 4". */
@@ -116,4 +132,23 @@ export function answerClass(value: unknown): string | undefined {
 
 export function statusBadge(status: string): HTMLElement {
   return h("span", { class: `badge status-${status}` }, status);
+}
+
+/** The answer most readers want first: does it tile a rectangle, and how small. */
+export function leadSummary(item: CatalogItem): string {
+  const { rectifiable, order, smallestRectangles } = item.properties;
+  if (item.polyomino.isRectangle()) return "The piece is itself a rectangle.";
+  if (rectifiable?.value === false) return "Copies tile no rectangle.";
+  if (rectifiable?.status === "open" || rectifiable === undefined)
+    return order?.lower !== undefined
+      ? `Not known whether copies tile any rectangle; a rectangle would need at least ${order.lower} copies.`
+      : "Not known whether copies tile any rectangle.";
+  const sizes = smallestRectangles?.value ?? [];
+  const sizeText = sizes
+    .map(([a, b]) => `${Math.min(a, b)} x ${Math.max(a, b)}`)
+    .join(", ");
+  if (order?.value === undefined) return "Copies tile a rectangle.";
+  return sizes.length === 0
+    ? `Order ${order.value}: no rectangle is tiled by fewer copies.`
+    : `Order ${order.value}: the smallest ${sizes.length === 1 ? "rectangle is" : "rectangles are"} ${sizeText}.`;
 }

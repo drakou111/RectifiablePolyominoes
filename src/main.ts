@@ -35,7 +35,7 @@ function render(): void {
       page = polyominoPage(context, decodeURIComponent(argument ?? ""));
       break;
     case "open":
-      page = openProblemsPage(context);
+      page = openProblemsPage(context, params);
       break;
     case "references":
       page = referencesPage(context, params);

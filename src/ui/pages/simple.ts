@@ -1,10 +1,15 @@
 import { MAX_GENERATED_SIZE, type CatalogItem } from "../../core/catalog";
-import { PROPERTY_DEFINITIONS, type ReferenceKind } from "../../core/model";
+import {
+  PROPERTY_DEFINITIONS,
+  type PropertyKey,
+  type ReferenceKind,
+} from "../../core/model";
 import { polyominoHref, type SiteContext } from "../context";
 import { h, link } from "../dom";
-import { citationLink, formatProperty, fullCitation } from "../format";
+import { citationLink, fullCitation, summarizeProperty } from "../format";
 import { renderPolyomino } from "../render";
 import { allDataDownloadButton } from "../download";
+import { sizeLinks } from "./browse";
 import { GUIDE_TOPICS } from "./guide";
 
 const MAX_LISTED_CITATIONS = 30;
@@ -51,6 +56,13 @@ export function homePage(context: SiteContext): HTMLElement {
       h(
         "li",
         {},
+        "By size, sorted by order: ",
+        sizeLinks(MAX_GENERATED_SIZE),
+        ".",
+      ),
+      h(
+        "li",
+        {},
         link("#/open", "Open problems"),
         `: ${open} polyominoes with open questions, ${rectangleOpen} of them on whether any rectangle can be tiled.`,
       ),
@@ -81,63 +93,73 @@ export function homePage(context: SiteContext): HTMLElement {
   );
 }
 
-export function openProblemsPage(context: SiteContext): HTMLElement {
-  const items = itemsWithOpenProperties(context);
-  const rows = items.map((item) => {
-    const openProperties = PROPERTY_DEFINITIONS.filter(
-      (definition) => item.properties[definition.key]?.status === "open",
-    );
-    return h(
-      "tr",
-      {},
-      h(
-        "td",
-        { class: "thumb" },
-        link(
-          polyominoHref(item.id),
-          renderPolyomino(item.polyomino, "shape thumbnail"),
-        ),
-      ),
-      h("td", {}, link(polyominoHref(item.id), h("code", {}, item.id))),
-      h("td", { class: "numeric" }, item.size),
-      h(
-        "td",
-        {},
-        ...openProperties.map((definition) => {
-          const record = item.properties[definition.key];
-          return h(
-            "div",
-            {},
-            `${definition.label}: ${record === undefined ? "" : formatProperty(definition.key, record)}`,
-            record?.ref &&
-              h(
-                "span",
-                {},
-                " (",
-                citationLink(
-                  record.ref,
-                  context.references.get(record.ref),
-                  record.refDetail,
-                ),
-                ")",
-              ),
-          );
-        }),
-      ),
-    );
-  });
-  return h(
-    "section",
-    {},
-    h("h1", {}, "Open problems"),
-    h(
-      "p",
-      {},
-      "Polyominoes with at least one property recorded as open. Bounds, where known, are shown.",
+/** Each open property as the question it leaves open. */
+const OPEN_QUESTIONS: Record<PropertyKey, string> = {
+  rectifiable: "Does it tile any rectangle?",
+  order: "What is its order?",
+  oddOrder: "What is its odd order?",
+  smallestRectangles: "What are its smallest rectangles?",
+  smallestSquare: "What is its smallest square?",
+  primeRectangles: "Is the list of prime rectangles complete?",
+  tilesHalfStrip: "Does it tile a half-strip?",
+  tilesPlane: "Does it tile the plane?",
+  minColors: "How few colors does a rectangle tiling need?",
+};
+
+/** One section per open question; `?type=<property>` shows just that one. */
+export function openProblemsPage(
+  context: SiteContext,
+  params: URLSearchParams,
+): HTMLElement {
+  const groups = PROPERTY_DEFINITIONS.map((definition) => ({
+    definition,
+    items: context.catalog.items.filter(
+      (item) => item.properties[definition.key]?.status === "open",
     ),
-    items.length === 0
-      ? h("p", {}, "None recorded.")
-      : h(
+  })).filter((group) => group.items.length > 0);
+  const wanted = params.get("type");
+  const shown = groups.filter(
+    (group) => wanted === null || group.definition.key === wanted,
+  );
+
+  const typeLink = (key: string | null, text: string): HTMLElement =>
+    key === wanted
+      ? h("strong", {}, text)
+      : link(key === null ? "#/open" : `#/open?type=${key}`, text);
+  const nav = h(
+    "p",
+    { class: "open-nav" },
+    typeLink(
+      null,
+      `All (${itemsWithOpenProperties(context).length} polyominoes)`,
+    ),
+    ...groups.flatMap((group) => [
+      " | ",
+      typeLink(
+        group.definition.key,
+        `${group.definition.label} (${group.items.length})`,
+      ),
+    ]),
+  );
+
+  const section = ({
+    definition,
+    items,
+  }: (typeof groups)[number]): HTMLElement =>
+    h(
+      "section",
+      { id: `open-${definition.key}` },
+      h("h2", {}, OPEN_QUESTIONS[definition.key]),
+      h(
+        "p",
+        { class: "muted" },
+        `${definition.label}: ${definition.description} `,
+        `${items.length} ${items.length === 1 ? "polyomino" : "polyominoes"}.`,
+      ),
+      h(
+        "div",
+        { class: "table-scroll" },
+        h(
           "table",
           { class: "catalogue" },
           h(
@@ -149,11 +171,71 @@ export function openProblemsPage(context: SiteContext): HTMLElement {
               h("th", {}, "Shape"),
               h("th", {}, "ID"),
               h("th", { class: "numeric" }, "Cells"),
-              h("th", {}, "Open"),
+              h("th", {}, "What is known"),
+              h("th", {}, "Source and notes"),
             ),
           ),
-          h("tbody", {}, ...rows),
+          h(
+            "tbody",
+            {},
+            ...items.map((item) => {
+              const record = item.properties[definition.key];
+              return h(
+                "tr",
+                {},
+                h(
+                  "td",
+                  { class: "thumb" },
+                  link(
+                    polyominoHref(item.id),
+                    renderPolyomino(item.polyomino, "shape thumbnail"),
+                  ),
+                ),
+                h(
+                  "td",
+                  {},
+                  link(polyominoHref(item.id), h("code", {}, item.id)),
+                ),
+                h("td", { class: "numeric" }, item.size),
+                h(
+                  "td",
+                  {},
+                  record === undefined
+                    ? ""
+                    : summarizeProperty(definition.key, record),
+                ),
+                h(
+                  "td",
+                  {},
+                  record?.ref &&
+                    citationLink(
+                      record.ref,
+                      context.references.get(record.ref),
+                      record.refDetail,
+                    ),
+                  record?.note && h("div", { class: "muted" }, record.note),
+                ),
+              );
+            }),
+          ),
         ),
+      ),
+    );
+
+  return h(
+    "section",
+    {},
+    h("h1", {}, "Open problems"),
+    h(
+      "p",
+      {},
+      "Questions this catalogue records as open, grouped by kind. Bounds are shown where known. ",
+      "Pick a kind to see only those polyominoes.",
+    ),
+    nav,
+    shown.length === 0
+      ? h("p", {}, "None recorded.")
+      : h("div", {}, ...shown.map(section)),
   );
 }
 
