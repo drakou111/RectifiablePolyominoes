@@ -40,10 +40,10 @@ it("data/ is valid", () => {
 // OEIS A000105 (free polyominoes) and A001419 (free polyominoes with holes).
 const FREE_POLYOMINOES = [
   1, 1, 2, 5, 12, 35, 108, 369, 1285, 4655, 17073, 63600, 238591, 901971,
-  3426576,
+  3426576, 13079255,
 ];
 const WITH_HOLES = [
-  0, 0, 0, 0, 0, 0, 1, 6, 37, 195, 979, 4663, 21474, 96496, 425449,
+  0, 0, 0, 0, 0, 0, 1, 6, 37, 195, 979, 4663, 21474, 96496, 425449, 1849252,
 ];
 
 const sizeFile = Object.values(

@@ -1,0 +1,23 @@
+{
+  "id": "fcb604040e",
+  "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": true,
+      "reason": "A tiling was found."
+    },
+    "order": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": 4,
+      "reason": "Every rectangle holding fewer than 4 copies was searched exhaustively."
+    },
+    "smallestRectangles": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": [[8, 8]],
+      "reason": "Every rectangle holding 4 copies was searched exhaustively."
+    }
+  }
+}

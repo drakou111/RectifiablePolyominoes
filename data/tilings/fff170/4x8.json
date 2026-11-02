@@ -1,0 +1,10 @@
+{
+  "width": 4,
+  "height": 8,
+  "ref": "site-solver",
+  "note": "Found by exhaustive search (tools/classify-size.ts).",
+  "placements": [
+    { "o": 3, "x": 0, "y": 0 },
+    { "o": 1, "x": 1, "y": 0 }
+  ]
+}

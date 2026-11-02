@@ -36,6 +36,8 @@ const SIZE_NAMES = [
   "Tridecominoes",
   "Tetradecominoes",
   "Pentadecominoes",
+  "Hexadecominoes",
+  "Heptadecominoes",
 ];
 
 /** "Pentominoes", or "11-ominoes" past the named sizes. */

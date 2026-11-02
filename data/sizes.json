@@ -1,5 +1,5 @@
 {
-  "complete": 15,
+  "complete": 16,
   "note": "Every free polyomino with up to the complete size was classified: the catalogue lists those that tile a rectangle or whose answer is open; every other one was shown to tile no rectangle, by published results, this site's exhaustive searches, or a contributed classification of sizes 11 to 13.",
   "sizes": {
     "1": {
@@ -61,6 +61,10 @@
     "15": {
       "total": 3426576,
       "withHoles": 425449
+    },
+    "16": {
+      "total": 13079255,
+      "withHoles": 1849252
     }
   }
 }

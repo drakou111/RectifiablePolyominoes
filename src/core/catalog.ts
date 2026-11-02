@@ -11,7 +11,7 @@ function withInferred(properties: Properties): Properties {
  * Every polyomino up to this size was classified; the catalogue lists the ones that tile a
  * rectangle or are open. Must match "complete" in data/sizes.json.
  */
-export const COMPLETE_SIZE = 15;
+export const COMPLETE_SIZE = 16;
 
 /** The rectangles with up to `maxSize` cells, as polyominoes; they need no entry. */
 export function rectanglePieces(maxSize: number): Polyomino[] {
