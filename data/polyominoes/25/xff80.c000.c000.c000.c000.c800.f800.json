@@ -1,7 +1,32 @@
 {
   "id": "xff80.c000.c000.c000.c000.c800.f800",
-  "names": ["yin"],
+  "names": [
+    "yin"
+  ],
   "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "value": true,
+      "ref": "site-solver",
+      "reason": "A stored tiling covers a 10 x 10 rectangle."
+    },
+    "order": {
+      "status": "computed",
+      "value": 4,
+      "ref": "site-solver",
+      "reason": "A stored tiling uses 4 copies, and every rectangle holding fewer copies was ruled out by exhaustive search."
+    },
+    "smallestRectangles": {
+      "status": "computed",
+      "value": [
+        [
+          10,
+          10
+        ]
+      ],
+      "ref": "site-solver",
+      "reason": "Every rectangle holding 4 copies was searched to the end."
+    },
     "minColors": {
       "status": "computed",
       "value": 2,

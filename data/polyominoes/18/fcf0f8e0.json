@@ -1,7 +1,32 @@
 {
   "id": "fcf0f8e0",
-  "names": ["cut"],
+  "names": [
+    "cut"
+  ],
   "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "value": true,
+      "ref": "site-solver",
+      "reason": "A stored tiling covers a 4 x 9 rectangle."
+    },
+    "order": {
+      "status": "computed",
+      "value": 2,
+      "ref": "site-solver",
+      "reason": "A stored tiling uses 2 copies, and every rectangle holding fewer copies was ruled out by exhaustive search."
+    },
+    "smallestRectangles": {
+      "status": "computed",
+      "value": [
+        [
+          4,
+          9
+        ]
+      ],
+      "ref": "site-solver",
+      "reason": "Every rectangle holding 2 copies was searched to the end."
+    },
     "minColors": {
       "status": "computed",
       "value": 2,

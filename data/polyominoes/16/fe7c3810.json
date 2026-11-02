@@ -1,7 +1,32 @@
 {
   "id": "fe7c3810",
-  "names": ["symmetric"],
+  "names": [
+    "symmetric"
+  ],
   "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "value": true,
+      "ref": "site-solver",
+      "reason": "A stored tiling covers a 8 x 8 rectangle."
+    },
+    "order": {
+      "status": "computed",
+      "value": 4,
+      "ref": "site-solver",
+      "reason": "A stored tiling uses 4 copies, and every rectangle holding fewer copies was ruled out by exhaustive search."
+    },
+    "smallestRectangles": {
+      "status": "computed",
+      "value": [
+        [
+          8,
+          8
+        ]
+      ],
+      "ref": "site-solver",
+      "reason": "Every rectangle holding 4 copies was searched to the end."
+    },
     "minColors": {
       "status": "computed",
       "value": 2,

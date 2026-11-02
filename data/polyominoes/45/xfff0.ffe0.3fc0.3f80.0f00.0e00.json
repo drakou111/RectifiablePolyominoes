@@ -1,7 +1,32 @@
 {
   "id": "xfff0.ffe0.3fc0.3f80.0f00.0e00",
-  "names": ["joined"],
+  "names": [
+    "joined"
+  ],
   "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "value": true,
+      "ref": "site-solver",
+      "reason": "A stored tiling covers a 12 x 15 rectangle."
+    },
+    "order": {
+      "status": "computed",
+      "value": 4,
+      "ref": "site-solver",
+      "reason": "A stored tiling uses 4 copies, and every rectangle holding fewer copies was ruled out by exhaustive search."
+    },
+    "smallestRectangles": {
+      "status": "computed",
+      "value": [
+        [
+          12,
+          15
+        ]
+      ],
+      "ref": "site-solver",
+      "reason": "Every rectangle holding 4 copies was searched to the end."
+    },
     "minColors": {
       "status": "open",
       "upper": 3,
