@@ -3,11 +3,14 @@ import { availableParallelism } from "node:os";
 import { join } from "node:path";
 import type { PrimeRectangles } from "../src/core/model";
 import { Polyomino } from "../src/core/polyomino";
-import type {
-  WitnessJob,
-  WitnessOutcome,
-  WitnessParameters,
+import {
+  runWitnessJobNative,
+  type NativeWitnessSettings,
+  type WitnessJob,
+  type WitnessOutcome,
+  type WitnessParameters,
 } from "./lib/witness-job";
+import { ensureNativeTiler } from "./lib/native-tiler";
 import { runPool } from "./lib/pool";
 import {
   DATA_DIR,
@@ -20,11 +23,16 @@ const USAGE = `Stores a tiling for every property that names a rectangle but has
 
 Usage: npx tsx tools/witnesses.ts [options]
 
+  --engine <name>    native (default): the C++ frontier tiler in tools/cpp, built on first use;
+                     js: exact cover in worker threads
   --kinds <list>     any of square,odd,prime (default all)
-  --max-area <n>     skip rectangles larger than n cells (default 5000; exact cover
-                     builds every placement up front, so huge rectangles exhaust memory)
-  --budget <steps>   step budget of one rectangle search (default 20000000)
-  --workers <n>      worker threads (default: all cores)
+  --max-area <n>     skip rectangles larger than n cells (default: none for native, 5000 for js,
+                     whose exact cover builds every placement up front and runs out of memory)
+  --budget <steps>   step (js) or node (native) budget of one rectangle search (default 20000000)
+  --seeds <a-b>      native: restart seeds, each with the full budget (default 1-4)
+  --cache-bits <b>   native: log2 entries of the failed-state cache, 8 bytes each (default 24)
+  --pocket-limit <p> native: reject moves that leave an empty pocket under p cells (default 2)
+  --workers <n>      parallel searches (default: all cores)
   --only <ids>       comma-separated IDs
   --dry-run          list the jobs only
 
@@ -32,7 +40,8 @@ Squares and prime rectangles have known sizes; an odd tiling tries every rectang
 odd order's number of copies. Jobs run smallest first and each tiling is written as soon as it is
 found. Existing tiling files are never overwritten. Progress goes to output/witnesses/run.log.`;
 
-const DEFAULT_MAX_AREA = 5000;
+const JS_MAX_AREA = 5000;
+const ENGINES = ["native", "js"] as const;
 const ALL_KINDS = ["square", "odd", "prime"] as const;
 
 function argument(name: string, fallback: string): string {
@@ -45,7 +54,21 @@ const kinds = new Set(argument("--kinds", ALL_KINDS.join(",")).split(","));
 for (const kind of kinds)
   if (!(ALL_KINDS as readonly string[]).includes(kind))
     throw new Error(`unknown kind "${kind}"; use ${ALL_KINDS.join(", ")}`);
-const maxArea = Number(argument("--max-area", String(DEFAULT_MAX_AREA)));
+const engine = argument("--engine", "native");
+if (!(ENGINES as readonly string[]).includes(engine))
+  throw new Error(`unknown engine "${engine}"; use ${ENGINES.join(", ")}`);
+const maxArea = Number(
+  argument(
+    "--max-area",
+    String(engine === "js" ? JS_MAX_AREA : Number.MAX_SAFE_INTEGER),
+  ),
+);
+const seedRange = /^(\d+)-(\d+)$/.exec(argument("--seeds", "1-4"));
+if (seedRange === null) throw new Error("--seeds must look like 1-4");
+const seeds: number[] = [];
+for (let seed = Number(seedRange[1]); seed <= Number(seedRange[2]); seed++)
+  seeds.push(seed);
+if (seeds.length === 0) throw new Error("--seeds range is empty");
 const parameters: WitnessParameters = {
   stepBudget: Number(argument("--budget", "20000000")),
 };
@@ -54,7 +77,19 @@ const workerCount = Number(
 );
 const only = new Set(argument("--only", "").split(",").filter(Boolean));
 const dryRun = process.argv.includes("--dry-run");
-for (const value of [workerCount, parameters.stepBudget, maxArea])
+const nativeSettings: NativeWitnessSettings = {
+  budget: parameters.stepBudget,
+  cacheBits: Number(argument("--cache-bits", "24")),
+  pocketLimit: Number(argument("--pocket-limit", "2")),
+  seeds,
+};
+for (const value of [
+  workerCount,
+  parameters.stepBudget,
+  maxArea,
+  nativeSettings.cacheBits,
+  nativeSettings.pocketLimit,
+])
   if (!Number.isInteger(value) || value < 1)
     throw new Error(`numeric options must be positive integers, got ${value}`);
 
@@ -126,7 +161,11 @@ const area = (job: WitnessJob): number =>
 jobs.sort((x, y) => area(x) - area(y));
 const counts = { square: 0, odd: 0, prime: 0 };
 for (const job of jobs) counts[job.kind]++;
-console.log(`${jobs.length} jobs`, counts, parameters);
+const runParameters =
+  engine === "js"
+    ? { engine, ...parameters, maxArea }
+    : { engine, ...nativeSettings, maxArea };
+console.log(`${jobs.length} jobs`, counts, runParameters);
 if (dryRun) {
   for (const job of jobs)
     console.log(job.id, job.kind, JSON.stringify(job.rectangles));
@@ -138,9 +177,9 @@ mkdirSync(logDir, { recursive: true });
 const logPath = join(logDir, "run.log");
 appendFileSync(
   logPath,
-  `\n# ${new Date().toISOString()} ${process.argv.slice(2).join(" ")}\n`,
+  `\n# ${new Date().toISOString()} ${jobs.length} jobs ${JSON.stringify(runParameters)}\n`,
 );
-const tally = { found: 0, budget: 0, impossible: 0 };
+const tally = { found: 0, budget: 0, impossible: 0, exhausted: 0 };
 const NOTES: Record<WitnessJob["kind"], string> = {
   square: "Smallest square, found by exact-cover search (tools/witnesses.ts).",
   odd: "Smallest odd tiling, found by exact-cover search (tools/witnesses.ts).",
@@ -168,17 +207,32 @@ const record = (outcome: WitnessOutcome): void => {
   }
   if (outcome.kind === "impossible")
     line = `CONTRADICTION: ${line}; the data says this rectangle tiles`;
+  if (outcome.kind === "exhausted")
+    line = `CHECK: ${line}; the data says this tiles (the native cache is lossy, so not a proof)`;
   appendFileSync(logPath, `${line}\n`);
   if (outcome.kind !== "budget") console.log(line);
 };
 
-await runPool<WitnessJob, WitnessOutcome>(
-  new URL("./lib/witness-worker-bootstrap.mjs", import.meta.url),
-  parameters,
-  jobs,
-  workerCount,
-  50,
-  record,
-);
+if (engine === "js")
+  await runPool<WitnessJob, WitnessOutcome>(
+    new URL("./lib/witness-worker-bootstrap.mjs", import.meta.url),
+    parameters,
+    jobs,
+    workerCount,
+    50,
+    record,
+  );
+else {
+  ensureNativeTiler();
+  let next = 0;
+  let done = 0;
+  const lane = async (): Promise<void> => {
+    for (let job = jobs[next++]; job !== undefined; job = jobs[next++]) {
+      record(await runWitnessJobNative(job, nativeSettings));
+      if (++done % 25 === 0) console.log(`${done}/${jobs.length} done`, tally);
+    }
+  };
+  await Promise.all(Array.from({ length: workerCount }, lane));
+}
 console.log("done", tally);
 appendFileSync(logPath, `# done ${JSON.stringify(tally)}\n`);

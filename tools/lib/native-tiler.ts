@@ -1,0 +1,143 @@
+import { execFile, execFileSync } from "node:child_process";
+import { existsSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import type { Placement } from "../../src/core/model";
+import type { Polyomino } from "../../src/core/polyomino";
+import { PROJECT_ROOT } from "./store";
+
+const SOURCE_PATH = join(PROJECT_ROOT, "tools", "cpp", "rect_tiler.cpp");
+export const NATIVE_TILER_PATH = join(
+  PROJECT_ROOT,
+  "tools",
+  "cpp",
+  "bin",
+  process.platform === "win32" ? "rect_tiler.exe" : "rect_tiler",
+);
+/** Generous: a run is bounded by its node budget, this only catches a hung process. */
+const MAX_OUTPUT_BYTES = 256 * 1024 * 1024;
+
+export interface NativeSettings {
+  /** Search nodes before giving up. */
+  readonly budget: number;
+  /** log2 of the failed-state cache size; 8 bytes per entry. */
+  readonly cacheBits: number;
+  /** 0 keeps the natural orientation order; any other value shuffles it. */
+  readonly seed: number;
+  /** Moves leaving an empty pocket smaller than this many cells are rejected (capped at the copy size). */
+  readonly pocketLimit: number;
+}
+
+export type NativeResult = { readonly nodes: number } & (
+  | {
+      readonly kind: "found";
+      readonly width: number;
+      readonly height: number;
+      readonly placements: Placement[];
+    }
+  /** Searched to the end without a tiling; the cache is lossy, so this is not a proof. */
+  | { readonly kind: "exhausted" }
+  | { readonly kind: "budget" }
+);
+
+/** Compiles the native tiler if no binary exists. Throws when the compiler fails. */
+export function ensureNativeTiler(): string {
+  if (existsSync(NATIVE_TILER_PATH)) return NATIVE_TILER_PATH;
+  mkdirSync(dirname(NATIVE_TILER_PATH), { recursive: true });
+  execFileSync(
+    "g++",
+    ["-O3", "-std=c++20", "-o", NATIVE_TILER_PATH, SOURCE_PATH],
+    { stdio: "inherit" },
+  );
+  return NATIVE_TILER_PATH;
+}
+
+/**
+ * Searches a width x height rectangle with the native frontier tiler. It sweeps along the
+ * longer side, so the rectangle is passed long side first and the tiling comes back that way.
+ */
+export function tileRectangleNative(
+  polyomino: Polyomino,
+  a: number,
+  b: number,
+  settings: NativeSettings,
+): Promise<NativeResult> {
+  const width = Math.max(a, b);
+  const height = Math.min(a, b);
+  const orientations = polyomino.distinctOrientations();
+  const cellLists = orientations
+    .map((o) =>
+      polyomino
+        .oriented(o)
+        .cells.map((cell) => `${cell.x},${cell.y}`)
+        .join(" "),
+    )
+    .join("|");
+  const args = [
+    "--width",
+    String(width),
+    "--height",
+    String(height),
+    "--orientations",
+    cellLists,
+    "--budget",
+    String(settings.budget),
+    "--cache-bits",
+    String(settings.cacheBits),
+    "--seed",
+    String(settings.seed),
+    "--pocket-limit",
+    String(settings.pocketLimit),
+  ];
+  return new Promise((resolve, reject) => {
+    execFile(
+      NATIVE_TILER_PATH,
+      args,
+      { maxBuffer: MAX_OUTPUT_BYTES, windowsHide: true },
+      (error, stdout, stderr) => {
+        if (error !== null) {
+          reject(
+            new Error(
+              `rect_tiler failed on ${polyomino.id} ${width}x${height}: ${error.message} ${stderr}`,
+            ),
+          );
+          return;
+        }
+        try {
+          resolve(parseNativeOutput(stdout, orientations, width, height));
+        } catch (parseError) {
+          reject(parseError as Error);
+        }
+      },
+    );
+  });
+}
+
+/** Turns the tiler's JSON line into a result, mapping orientation indices back to `o` values. */
+export function parseNativeOutput(
+  stdout: string,
+  orientations: readonly number[],
+  width: number,
+  height: number,
+): NativeResult {
+  const parsed = JSON.parse(stdout) as {
+    result: string;
+    nodes: number;
+    placements?: [number, number, number][];
+  };
+  if (parsed.result === "budget" || parsed.result === "exhausted")
+    return { kind: parsed.result, nodes: parsed.nodes };
+  if (parsed.result !== "found" || parsed.placements === undefined)
+    throw new Error(`unexpected rect_tiler output: ${stdout.slice(0, 200)}`);
+  return {
+    kind: "found",
+    nodes: parsed.nodes,
+    width,
+    height,
+    placements: parsed.placements.map(([index, x, y]) => {
+      const o = orientations[index];
+      if (o === undefined)
+        throw new Error(`rect_tiler returned orientation index ${index}`);
+      return { o, x, y };
+    }),
+  };
+}

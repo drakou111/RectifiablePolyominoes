@@ -12,3 +12,4 @@ output/
 .claude/
 CLAUDE.md
 CLAUDE.local.md
+tools/cpp/bin/
