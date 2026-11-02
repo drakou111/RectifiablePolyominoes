@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveProperties } from "../src/core/derived";
+import { deriveProperties, inferProperties } from "../src/core/derived";
 import { isNotApplicable, type Properties } from "../src/core/model";
 import { Polyomino } from "../src/core/polyomino";
 
@@ -32,5 +32,31 @@ describe("isNotApplicable", () => {
     const open = { rectifiable: { status: "open" } } as Properties;
     expect(isNotApplicable("order", open)).toBe(false);
     expect(isNotApplicable("order", {} as Properties)).toBe(false);
+  });
+});
+
+describe("inferProperties", () => {
+  it("leaves the order open whenever rectifiability is open", () => {
+    const open = { rectifiable: { status: "open" } } as Properties;
+    expect(inferProperties(open).order?.status).toBe("open");
+    const bounded = {
+      rectifiable: { status: "open" },
+      order: { status: "open", lower: 3360 },
+    } as Properties;
+    expect(inferProperties(bounded).order).toBeUndefined();
+    const tiler = {
+      rectifiable: { status: "computed", value: true },
+    } as Properties;
+    expect(inferProperties(tiler).order).toBeUndefined();
+  });
+
+  it("leaves the half-strip question open whenever rectifiability is open", () => {
+    const open = { rectifiable: { status: "open" } } as Properties;
+    expect(inferProperties(open).tilesHalfStrip?.status).toBe("open");
+    const known = {
+      rectifiable: { status: "open" },
+      tilesHalfStrip: { status: "computed", value: true },
+    } as Properties;
+    expect(inferProperties(known).tilesHalfStrip).toBeUndefined();
   });
 });

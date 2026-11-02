@@ -391,9 +391,22 @@ for (const outcome of [...others.values()].sort((a, b) =>
     },
   });
 if (!dryRun)
-  for (const id of summary.undecided)
+  for (const id of summary.undecided) {
+    const shape = Polyomino.fromId(id);
+    if (others.get(id)?.order === "none")
+      store.setProperty(
+        shape,
+        "order",
+        {
+          status: "open",
+          lower: parameters.maxCopies + 1,
+          ref: SOLVER_REF,
+          note: `Every rectangle with at most ${parameters.maxCopies} copies was ruled out by exhaustive search; the piece may not tile any rectangle.`,
+        } as PropertyRecord<unknown>,
+        "classify",
+      );
     store.setProperty(
-      Polyomino.fromId(id),
+      shape,
       "rectifiable",
       {
         status: "open",
@@ -402,6 +415,7 @@ if (!dryRun)
       } as PropertyRecord<unknown>,
       "classify",
     );
+  }
 const saved = dryRun ? "dry run, data/ untouched" : store.save();
 
 if (!dryRun) {

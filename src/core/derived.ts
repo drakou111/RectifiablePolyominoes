@@ -49,6 +49,23 @@ export function inferProperties(properties: Properties): Properties {
       false,
       "It does not tile a half-strip, and every rectangle tiler does.",
     );
+  if (
+    properties.rectifiable?.status === "open" &&
+    properties.order === undefined
+  )
+    result.order = {
+      status: "open",
+      note: "Unknown, since it is open whether any rectangle can be tiled.",
+    };
+  // A half-strip tiling is not known to give a rectangle, so this stays open too.
+  if (
+    properties.rectifiable?.status === "open" &&
+    properties.tilesHalfStrip === undefined
+  )
+    result.tilesHalfStrip = {
+      status: "open",
+      note: "Not recorded: no half-strip tiling is known, and none has been ruled out.",
+    };
   return result as Properties;
 }
 
