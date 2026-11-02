@@ -9,7 +9,8 @@ Reads one job as JSON on stdin (the caller is tools/lib/sat-tiler.ts):
 and prints one JSON line in the native tiler's format:
   {"result": "found", "nodes": 0, "placements": [[orientation index, x, y], ...]}
   {"result": "exhausted", "nodes": 0}   the solver proved no tiling exists
-One variable per placement; each cell is covered exactly once (sequential-counter encoding).
+One variable per placement; each cell is covered exactly once (pairwise at-most-one clauses,
+or a sequential counter when those would be too many).
 There is no time limit here: pysat cannot interrupt CaDiCaL, so the caller kills the process.
 With --print-python it prints the interpreter path instead, so callers can skip uv next time.
 """
@@ -22,6 +23,9 @@ from pysat.card import CardEnc, EncType
 from pysat.solvers import Solver
 
 SOLVER_NAME = "cadical195"
+# Pairwise "at most one" clauses solved 3 of 6 hard prime rectangles in 180 s where the
+# sequential counter solved none, but they grow quadratically: above this many, use the counter.
+MAX_PAIRWISE_CLAUSES = 40_000_000
 
 
 @dataclass(frozen=True)
@@ -64,9 +68,16 @@ def solve(job: Job) -> dict[str, object]:
     if any(not variables for variables in covering):
         return {"result": "exhausted", "nodes": 0}
 
+    pairwise_clauses = sum(len(v) * (len(v) - 1) // 2 for v in covering)
     with Solver(name=SOLVER_NAME) as solver:
         top = len(placements)
         for variables in covering:
+            if pairwise_clauses <= MAX_PAIRWISE_CLAUSES:
+                solver.add_clause(variables)
+                for i, first in enumerate(variables):
+                    for second in variables[i + 1 :]:
+                        solver.add_clause([-first, -second])
+                continue
             encoded = CardEnc.equals(
                 lits=variables, bound=1, top_id=top, encoding=EncType.seqcounter
             )
