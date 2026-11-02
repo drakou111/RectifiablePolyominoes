@@ -356,6 +356,10 @@ summary {
   max-width: none;
 }
 
+.tiling-grid .tiling-card.strip .picture {
+  overflow-x: auto;
+}
+
 .tiling-grid .tiling-card.strip svg.tiling {
   max-height: none;
 }

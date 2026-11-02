@@ -154,10 +154,10 @@ function orientationsFigure(item: CatalogItem): HTMLElement {
 
 /** Small tilings stay small instead of filling the page. */
 const MAX_CELL_PIXELS = 28;
-/** A tiling this many times longer than it is wide is drawn folded, across a full row. */
+/** A tiling this many times longer than it is wide is drawn long side across, on a full row. */
 const STRIP_ASPECT = 4;
-/** Folds this long keep cells about 6 px wide on a full row; wider strips get longer folds. */
-const FOLD_COLUMNS = 150;
+/** Strips keep at least this many pixels per cell; longer ones scroll sideways. */
+const MIN_STRIP_CELL_PIXELS = 4;
 
 interface PictureOptions {
   readonly context: SiteContext;
@@ -240,12 +240,15 @@ function tilingCard(
           file.placements,
           mode,
           coloring,
-          strip ? Math.max(FOLD_COLUMNS, STRIP_ASPECT * short) : undefined,
+          strip,
         );
         coloring = drawn.coloring ?? coloring;
         if (coloring !== undefined) options.colorings.set(ref.path, coloring);
         const columns = Number(drawn.element.getAttribute("data-cols"));
         drawn.element.style.maxWidth = `${columns * MAX_CELL_PIXELS}px`;
+        drawn.element.style.minWidth = strip
+          ? `${columns * MIN_STRIP_CELL_PIXELS}px`
+          : "";
         picture.replaceChildren(drawn.element);
         colorInfo.textContent =
           coloring === undefined
@@ -262,7 +265,9 @@ function tilingCard(
           file.width > file.height
             ? `Stored as ${file.width} x ${file.height}. `
             : "",
-          card.classList.contains("strip") ? "Drawn folded. " : "",
+          card.classList.contains("strip") && file.height > file.width
+            ? "Drawn turned a quarter. "
+            : "",
           colorInfo,
           link(`data/${ref.path}`, "JSON"),
         ),
