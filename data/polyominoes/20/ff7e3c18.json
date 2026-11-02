@@ -1,8 +1,6 @@
 {
   "id": "ff7e3c18",
-  "names": [
-    "symmetric"
-  ],
+  "names": ["symmetric"],
   "properties": {
     "rectifiable": {
       "status": "computed",
@@ -18,12 +16,7 @@
     },
     "smallestRectangles": {
       "status": "computed",
-      "value": [
-        [
-          8,
-          10
-        ]
-      ],
+      "value": [[8, 10]],
       "ref": "site-solver",
       "reason": "Every rectangle holding 4 copies was searched to the end."
     },

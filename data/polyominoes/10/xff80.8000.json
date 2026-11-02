@@ -25,12 +25,7 @@
       "ref": "reid-rectifiable-data",
       "refDetail": "10omino01_rect.html",
       "untraced": true,
-      "value": [
-        [
-          2,
-          10
-        ]
-      ]
+      "value": [[2, 10]]
     },
     "smallestSquare": {
       "status": "computed",
@@ -45,14 +40,8 @@
       "untraced": true,
       "value": {
         "rectangles": [
-          [
-            2,
-            10
-          ],
-          [
-            11,
-            20
-          ]
+          [2, 10],
+          [11, 20]
         ],
         "complete": false
       },

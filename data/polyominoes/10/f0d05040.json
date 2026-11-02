@@ -21,12 +21,7 @@
     "smallestRectangles": {
       "status": "computed",
       "ref": "site-solver",
-      "value": [
-        [
-          4,
-          5
-        ]
-      ],
+      "value": [[4, 5]],
       "reason": "Every rectangle holding 2 copies was searched exhaustively."
     },
     "smallestSquare": {

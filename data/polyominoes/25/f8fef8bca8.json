@@ -1,8 +1,6 @@
 {
   "id": "f8fef8bca8",
-  "names": [
-    "quartered"
-  ],
+  "names": ["quartered"],
   "properties": {
     "rectifiable": {
       "status": "computed",
@@ -18,12 +16,7 @@
     },
     "smallestRectangles": {
       "status": "computed",
-      "value": [
-        [
-          10,
-          10
-        ]
-      ],
+      "value": [[10, 10]],
       "ref": "site-solver",
       "reason": "Every rectangle holding 4 copies was searched to the end."
     },

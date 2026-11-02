@@ -1,8 +1,6 @@
 {
   "id": "xff80.c000",
-  "names": [
-    "11-omino"
-  ],
+  "names": ["11-omino"],
   "properties": {
     "rectifiable": {
       "status": "proven",
@@ -28,12 +26,7 @@
       "ref": "reid-rectifiable-data",
       "refDetail": "11omino2_rect.html",
       "untraced": true,
-      "value": [
-        [
-          2,
-          11
-        ]
-      ]
+      "value": [[2, 11]]
     },
     "smallestSquare": {
       "status": "computed",
@@ -47,12 +40,7 @@
       "refDetail": "11omino2_rect.html",
       "untraced": true,
       "value": {
-        "rectangles": [
-          [
-            2,
-            11
-          ]
-        ],
+        "rectangles": [[2, 11]],
         "complete": false
       },
       "note": "Reid lists these prime rectangles but does not claim the list is complete; larger primes may exist."

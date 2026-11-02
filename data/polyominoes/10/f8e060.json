@@ -4,13 +4,13 @@
     "rectifiable": {
       "status": "open",
       "ref": "site-solver",
-      "note": "Not resolved by this site's searches. Exact column sweeps rule out every rectangle with a side of at most 24, and exhaustive search rules out every rectangle holding at most 24 copies."
+      "note": "Not resolved by this site's searches. Exact column sweeps rule out every rectangle with a side of at most 66 and every half-strip of width at most 66, and exhaustive search rules out every rectangle holding at most 24 copies."
     },
     "order": {
       "status": "open",
-      "lower": 25,
+      "lower": 449,
       "ref": "site-solver",
-      "note": "Every rectangle holding at most 24 copies was ruled out by exhaustive search; the piece may not tile any rectangle."
+      "note": "Every tileable rectangle has both sides above 66, so it holds at least 449 copies; the piece may not tile any rectangle."
     },
     "tilesPlane": {
       "status": "computed",

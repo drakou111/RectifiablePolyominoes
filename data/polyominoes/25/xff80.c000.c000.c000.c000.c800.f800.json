@@ -1,8 +1,6 @@
 {
   "id": "xff80.c000.c000.c000.c000.c800.f800",
-  "names": [
-    "yin"
-  ],
+  "names": ["yin"],
   "properties": {
     "rectifiable": {
       "status": "computed",
@@ -18,12 +16,7 @@
     },
     "smallestRectangles": {
       "status": "computed",
-      "value": [
-        [
-          10,
-          10
-        ]
-      ],
+      "value": [[10, 10]],
       "ref": "site-solver",
       "reason": "Every rectangle holding 4 copies was searched to the end."
     },

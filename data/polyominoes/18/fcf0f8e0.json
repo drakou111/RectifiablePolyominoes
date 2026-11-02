@@ -1,8 +1,6 @@
 {
   "id": "fcf0f8e0",
-  "names": [
-    "cut"
-  ],
+  "names": ["cut"],
   "properties": {
     "rectifiable": {
       "status": "computed",
@@ -18,12 +16,7 @@
     },
     "smallestRectangles": {
       "status": "computed",
-      "value": [
-        [
-          4,
-          9
-        ]
-      ],
+      "value": [[4, 9]],
       "ref": "site-solver",
       "reason": "Every rectangle holding 2 copies was searched to the end."
     },

@@ -1,8 +1,6 @@
 {
   "id": "fcf8",
-  "names": [
-    "11-omino"
-  ],
+  "names": ["11-omino"],
   "properties": {
     "rectifiable": {
       "status": "proven",
@@ -31,12 +29,7 @@
       "ref": "reid-rectifiable-data",
       "refDetail": "11omino5_rect.html",
       "untraced": true,
-      "value": [
-        [
-          2,
-          11
-        ]
-      ]
+      "value": [[2, 11]]
     },
     "smallestSquare": {
       "status": "computed",
@@ -51,26 +44,11 @@
       "untraced": true,
       "value": {
         "rectangles": [
-          [
-            2,
-            11
-          ],
-          [
-            19,
-            231
-          ],
-          [
-            21,
-            143
-          ],
-          [
-            23,
-            99
-          ],
-          [
-            25,
-            77
-          ]
+          [2, 11],
+          [19, 231],
+          [21, 143],
+          [23, 99],
+          [25, 77]
         ],
         "complete": false
       },

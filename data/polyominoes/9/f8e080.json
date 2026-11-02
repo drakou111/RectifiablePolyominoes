@@ -25,12 +25,7 @@
       "ref": "reid-rectifiable-data",
       "refDetail": "9omino14_rect.html",
       "untraced": true,
-      "value": [
-        [
-          3,
-          6
-        ]
-      ]
+      "value": [[3, 6]]
     },
     "smallestSquare": {
       "status": "computed",
@@ -44,12 +39,7 @@
       "refDetail": "9omino14_rect.html",
       "untraced": true,
       "value": {
-        "rectangles": [
-          [
-            3,
-            6
-          ]
-        ],
+        "rectangles": [[3, 6]],
         "complete": false
       },
       "note": "Reid lists these prime rectangles but does not claim the list is complete; larger primes may exist."
