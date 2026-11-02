@@ -1,13 +1,19 @@
 import {
   appendFileSync,
+  closeSync,
   existsSync,
   mkdirSync,
+  openSync,
   readFileSync,
+  readSync,
   renameSync,
+  statSync,
+  truncateSync,
   writeFileSync,
+  writeSync,
 } from "node:fs";
 import { availableParallelism } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { Worker } from "node:worker_threads";
 import { CLASSIFICATION_DIR } from "../src/core/classification";
 import type { PropertyRecord } from "../src/core/model";
@@ -114,8 +120,15 @@ const recordPath = join(
 interface Progress {
   readonly chunksDone: number;
   readonly piecesDone: number;
+  readonly nonTilers: number;
+  /** File lengths at the checkpoint: a resumed run cuts off anything written after it. */
+  readonly nonTilerBytes: number;
+  readonly otherBytes: number;
   readonly seconds: number;
 }
+
+/** Copy size when the record is assembled from the checkpoint file. */
+const COPY_BLOCK_BYTES = 1 << 24;
 
 const paths = {
   settings: join(stateDirectory, "settings.json"),
@@ -137,7 +150,27 @@ if (existsSync(paths.settings)) {
 } else writeFileSync(paths.settings, settings);
 let progress: Progress = existsSync(paths.progress)
   ? (JSON.parse(readFileSync(paths.progress, "utf8")) as Progress)
-  : { chunksDone: 0, piecesDone: 0, seconds: 0 };
+  : {
+      chunksDone: 0,
+      piecesDone: 0,
+      nonTilers: 0,
+      nonTilerBytes: 0,
+      otherBytes: 0,
+      seconds: 0,
+    };
+const fileLength = (path: string): number =>
+  existsSync(path) ? statSync(path).size : 0;
+for (const [path, length] of [
+  [paths.nonTilers, progress.nonTilerBytes],
+  [paths.others, progress.otherBytes],
+] as const) {
+  const actual = fileLength(path);
+  if (actual < length)
+    throw new Error(
+      `${path} is shorter than its checkpoint; the state is damaged`,
+    );
+  if (actual > length) truncateSync(path, length);
+}
 const reasons: string[] = existsSync(paths.reasons)
   ? readFileSync(paths.reasons, "utf8").split("\n").filter(Boolean)
   : [];
@@ -150,8 +183,8 @@ function saveProgress(next: Progress): void {
   progress = next;
 }
 
-/** Appends one finished chunk's results in a single write per file, then marks it done. */
-function flushChunk(outcomes: readonly SolveOutcome[]): void {
+/** Appends one finished chunk's results in a single write per file; returns its non-tilers. */
+function flushChunk(outcomes: readonly SolveOutcome[]): number {
   const nonTilerLines: string[] = [];
   const otherLines: string[] = [];
   for (const outcome of outcomes) {
@@ -173,6 +206,7 @@ function flushChunk(outcomes: readonly SolveOutcome[]): void {
     appendFileSync(paths.nonTilers, `${nonTilerLines.join("\n")}\n`);
   if (otherLines.length > 0)
     appendFileSync(paths.others, `${otherLines.join("\n")}\n`);
+  return nonTilerLines.length;
 }
 
 const expectedTotal = FREE_POLYOMINO_COUNTS[size - 1];
@@ -211,13 +245,16 @@ function flushFinishedChunks(): void {
     const chunk = pending.get(nextChunkToFlush);
     if (chunk === undefined || chunk.left > 0) return;
     if (chunk.handedOut < chunkSize && !exhausted) return;
-    flushChunk(chunk.outcomes);
+    const nonTilers = flushChunk(chunk.outcomes);
     pending.delete(nextChunkToFlush);
     nextChunkToFlush++;
     const now = Date.now();
     saveProgress({
       chunksDone: nextChunkToFlush,
       piecesDone: progress.piecesDone + chunk.outcomes.length,
+      nonTilers: progress.nonTilers + nonTilers,
+      nonTilerBytes: fileLength(paths.nonTilers),
+      otherBytes: fileLength(paths.others),
       seconds: progress.seconds + (now - lastSave) / 1000,
     });
     lastSave = now;
@@ -298,14 +335,6 @@ if (pending.size > 0)
   throw new Error(`${pending.size} chunks still pending after the run`);
 
 // Every piece is done: build the record and apply the rest.
-const nonTilerLines = existsSync(paths.nonTilers)
-  ? readFileSync(paths.nonTilers, "utf8").split("\n").filter(Boolean)
-  : [];
-const nonTilers = new Map<string, number>();
-for (const line of nonTilerLines) {
-  const [id, index] = line.split(" ");
-  nonTilers.set(id as string, Number(index));
-}
 const others = new Map<string, SolveOutcome>();
 if (existsSync(paths.others))
   for (const line of readFileSync(paths.others, "utf8").split("\n"))
@@ -314,26 +343,37 @@ if (existsSync(paths.others))
       others.set(outcome.id, outcome);
     }
 const candidates = totals.total - totals.withHoles - rectangles;
-if (nonTilers.size + others.size !== candidates)
+if (progress.nonTilers + others.size !== candidates)
   throw new Error(
-    `${nonTilers.size} non-tilers + ${others.size} others != ${candidates} candidates; the state in ${stateDirectory} is inconsistent`,
+    `${progress.nonTilers} non-tilers + ${others.size} others != ${candidates} candidates; the state in ${stateDirectory} is inconsistent`,
   );
 
 if (existsSync(recordPath))
   throw new Error(
     `${recordPath} exists already; move it away first so no record is overwritten`,
   );
-// Same format as formatClassification, written without building every line object.
-mkdirSync(join(recordPath, ".."), { recursive: true });
+// The classification format with pieces in enumeration order, copied in blocks, never held whole.
+mkdirSync(dirname(recordPath), { recursive: true });
 writeFileSync(
   recordPath,
   [
     `size ${size}`,
     ...reasons.map((reason, i) => `reason ${i} ${reason}`),
-    ...[...nonTilers.keys()].sort().map((id) => `${id} ${nonTilers.get(id)}`),
     "",
   ].join("\n"),
 );
+if (existsSync(paths.nonTilers)) {
+  const input = openSync(paths.nonTilers, "r");
+  const output = openSync(recordPath, "a");
+  const buffer = Buffer.alloc(COPY_BLOCK_BYTES);
+  for (;;) {
+    const read = readSync(input, buffer, 0, buffer.length, null);
+    if (read === 0) break;
+    writeSync(output, buffer, 0, read);
+  }
+  closeSync(input);
+  closeSync(output);
+}
 
 const store = new DataStore();
 const summary = newSolveSummary();
@@ -378,7 +418,7 @@ if (!dryRun) {
 const result = {
   size,
   ...totals,
-  nonTilers: nonTilers.size,
+  nonTilers: progress.nonTilers,
   ordersFound: summary.ordersFound,
   stripRectangles: summary.stripRectangles,
   undecided: summary.undecided,
@@ -394,7 +434,7 @@ const result = {
 };
 writeFileSync(paths.summary, `${JSON.stringify(result, null, 2)}\n`);
 console.log(
-  `size ${size}: ${totals.total} pieces (${totals.withHoles} with holes), ${nonTilers.size} tile no rectangle, ${summary.ordersFound + summary.stripRectangles} tile one, ${summary.undecided.length} undecided, ${others.size - summary.ordersFound - summary.stripRectangles - summary.undecided.length} already settled in data/`,
+  `size ${size}: ${totals.total} pieces (${totals.withHoles} with holes), ${progress.nonTilers} tile no rectangle, ${summary.ordersFound + summary.stripRectangles} tile one, ${summary.undecided.length} undecided, ${others.size - summary.ordersFound - summary.stripRectangles - summary.undecided.length} already settled in data/`,
 );
 console.log(saved);
 if (summary.disagreements.length > 0) {

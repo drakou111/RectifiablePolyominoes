@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { appendFileSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
@@ -61,11 +61,16 @@ describe("tools/classify-size.ts", () => {
   );
 
   it(
-    "resumes from its checkpoint and rebuilds the same record",
+    "resumes from its checkpoint, drops writes after it and rebuilds the same record",
     () => {
       const path = join(directory, "record", "7.txt");
       const before = readFileSync(path, "utf8");
       rmSync(path);
+      // A crash after appending but before the checkpoint leaves extra lines behind.
+      appendFileSync(
+        join(directory, "state", "7", "non-tilers.txt"),
+        "e0e0e0 0\n",
+      );
       const resumed = classify();
       expect(resumed.status, resumed.output).toBe(0);
       expect(resumed.output).toMatch(/resuming at piece 112 \(chunk 7\)/);

@@ -5,7 +5,8 @@
  *
  *   size <n>
  *   reason <index> <text>        one per distinct reason
- *   <id> <reason index>          one per piece, sorted by ID
+ *   <id> <reason index>          one per piece (sorted by ID, or in enumeration order for
+ *                                sizes written by tools/classify-size.ts)
  */
 export const CLASSIFICATION_DIR = "classification";
 
