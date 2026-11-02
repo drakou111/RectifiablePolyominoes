@@ -14,6 +14,8 @@ export interface TilingRef {
   readonly polyominoId: string;
   readonly width: number;
   readonly height: number;
+  /** The "-label" part of the file name, such as "odd" or "3colors". */
+  readonly label?: string;
   /** Path relative to data/, used to lazy-load the file. */
   readonly path: string;
 }
@@ -92,15 +94,22 @@ export class Catalog {
 
 /** Parses "tilings/<id>/<w>x<h>[-label].json" into a TilingRef. */
 export function parseTilingPath(path: string): TilingRef {
-  const match = /^tilings\/([^/]+)\/(\d+)x(\d+)(?:-[a-z0-9-]+)?\.json$/.exec(
+  const match = /^tilings\/([^/]+)\/(\d+)x(\d+)(?:-([a-z0-9-]+))?\.json$/.exec(
     path,
   );
   if (match === null) throw new Error(`Bad tiling path "${path}"`);
-  const [, polyominoId, width, height] = match as unknown as [
+  const [, polyominoId, width, height, label] = match as unknown as [
     string,
     string,
     string,
     string,
+    string | undefined,
   ];
-  return { polyominoId, width: Number(width), height: Number(height), path };
+  return {
+    polyominoId,
+    width: Number(width),
+    height: Number(height),
+    path,
+    ...(label !== undefined && { label }),
+  };
 }
