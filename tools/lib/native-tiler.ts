@@ -1,5 +1,5 @@
 import { execFile, execFileSync } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Placement } from "../../src/core/model";
 import type { Polyomino } from "../../src/core/polyomino";
@@ -19,8 +19,8 @@ const MAX_OUTPUT_BYTES = 256 * 1024 * 1024;
 export interface NativeSettings {
   /** Search nodes before giving up. */
   readonly budget: number;
-  /** log2 of the failed-state cache size; 8 bytes per entry. */
-  readonly cacheBits: number;
+  /** Memory of the failed-state cache, per process. */
+  readonly cacheMegabytes: number;
   /** 0 keeps the natural orientation order; any other value shuffles it. */
   readonly seed: number;
   /** Moves leaving an empty pocket smaller than this many cells are rejected (capped at the copy size). */
@@ -39,9 +39,13 @@ export type NativeResult = { readonly nodes: number } & (
   | { readonly kind: "budget" }
 );
 
-/** Compiles the native tiler if no binary exists. Throws when the compiler fails. */
+/** Compiles the native tiler when its binary is missing or older than the source. Throws when the compiler fails. */
 export function ensureNativeTiler(): string {
-  if (existsSync(NATIVE_TILER_PATH)) return NATIVE_TILER_PATH;
+  if (
+    existsSync(NATIVE_TILER_PATH) &&
+    statSync(NATIVE_TILER_PATH).mtimeMs >= statSync(SOURCE_PATH).mtimeMs
+  )
+    return NATIVE_TILER_PATH;
   mkdirSync(dirname(NATIVE_TILER_PATH), { recursive: true });
   execFileSync(
     "g++",
@@ -81,8 +85,8 @@ export function tileRectangleNative(
     cellLists,
     "--budget",
     String(settings.budget),
-    "--cache-bits",
-    String(settings.cacheBits),
+    "--cache-mb",
+    String(settings.cacheMegabytes),
     "--seed",
     String(settings.seed),
     "--pocket-limit",

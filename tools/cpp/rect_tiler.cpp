@@ -3,15 +3,15 @@
 // Fills cells in column-major order (down each column of height H, then the next column), always
 // covering the first empty cell. Everything before that cell is full, and no placed copy reaches
 // more than `reach` columns past it, so the state is (position, occupancy of the next reach*H
-// cells). States that led nowhere are remembered in a lossy hash cache and skipped when met again.
+// cells). States that led nowhere are remembered in a bounded cache and skipped when met again.
 // That turns the search into a sweep over frontier states, which suits long rectangles with a
 // short side H. A move is also rejected when it leaves an empty pocket smaller than
-// min(P, copy size) cells; P = 2 (single holes) solved the most per second in tests. Because the
-// cache is keyed by hashes and evicts entries, "exhausted" is a strong hint, not a proof.
+// min(P, copy size) cells; P = 2 (single holes) solved the most per second in tests. The cache
+// compares whole states and only forgets entries, so "exhausted" means no tiling exists.
 //
 // Build: g++ -O3 -std=c++20 -o tools/cpp/bin/rect_tiler tools/cpp/rect_tiler.cpp
 // Usage: rect_tiler --width W --height H --orientations "x,y x,y ...|x,y ...|..."
-//                   [--budget NODES] [--cache-bits B] [--seed S] [--pocket-limit P]
+//                   [--budget NODES] [--cache-mb M] [--seed S] [--pocket-limit P]
 // Each orientation is a normalized cell list; output placements use their index in this list.
 // Output (one JSON line): {"result":"found","nodes":N,"placements":[[o,x,y],...]}
 //                     or  {"result":"budget"|"exhausted","nodes":N}
@@ -39,7 +39,7 @@ struct Options {
     int height = 0;
     std::vector<std::vector<Cell>> orientations;
     long long budget = 100'000'000;
-    int cacheBits = 24;
+    int cacheMegabytes = 256;
     unsigned seed = 0;
     int pocketLimit = 2;  // pockets below this size are rejected; 0 or 1 turns the check off
 };
@@ -77,7 +77,7 @@ Options parseOptions(int argc, char** argv) {
         const std::string name = argv[i];
         if (name == "--help") {
             std::puts("rect_tiler --width W --height H --orientations \"x,y x,y|...\" "
-                      "[--budget NODES] [--cache-bits B] [--seed S] [--pocket-limit P]");
+                      "[--budget NODES] [--cache-mb M] [--seed S] [--pocket-limit P]");
             std::exit(0);
         }
         if (i + 1 >= argc) fail("missing value for " + name);
@@ -86,7 +86,7 @@ Options parseOptions(int argc, char** argv) {
         else if (name == "--height") options.height = std::stoi(value);
         else if (name == "--orientations") options.orientations = parseOrientations(value);
         else if (name == "--budget") options.budget = std::stoll(value);
-        else if (name == "--cache-bits") options.cacheBits = std::stoi(value);
+        else if (name == "--cache-mb") options.cacheMegabytes = std::stoi(value);
         else if (name == "--seed") options.seed = static_cast<unsigned>(std::stoul(value));
         else if (name == "--pocket-limit") options.pocketLimit = std::stoi(value);
         else fail("unknown option " + name);
@@ -94,7 +94,7 @@ Options parseOptions(int argc, char** argv) {
     if (options.width < 1 || options.height < 1) fail("--width and --height must be positive");
     if (options.orientations.empty()) fail("--orientations is required");
     if (options.budget < 1) fail("--budget must be positive");
-    if (options.cacheBits < 10 || options.cacheBits > 32) fail("--cache-bits must be in 10..32");
+    if (options.cacheMegabytes < 1 || options.cacheMegabytes > 65536) fail("--cache-mb must be in 1..65536");
     return options;
 }
 
@@ -106,36 +106,6 @@ std::uint64_t mix(std::uint64_t value) {
     value ^= value >> 33;
     return value;
 }
-
-/** Lossy set of failed-state hashes: 4-way buckets, a full bucket evicts one entry. */
-class FailedCache {
-public:
-    explicit FailedCache(int bits) : slots_(std::size_t{1} << bits, 0), mask_((std::size_t{1} << bits) - 1) {}
-
-    bool contains(std::uint64_t hash) const {
-        const std::uint64_t key = hash | 1;
-        const std::size_t base = hash & mask_ & ~std::size_t{3};
-        for (std::size_t i = 0; i < WAYS; i++)
-            if (slots_[base + i] == key) return true;
-        return false;
-    }
-
-    void insert(std::uint64_t hash) {
-        const std::uint64_t key = hash | 1;
-        const std::size_t base = hash & mask_ & ~std::size_t{3};
-        for (std::size_t i = 0; i < WAYS; i++)
-            if (slots_[base + i] == 0) {
-                slots_[base + i] = key;
-                return;
-            }
-        slots_[base + ((hash >> 40) & (WAYS - 1))] = key;
-    }
-
-private:
-    static constexpr std::size_t WAYS = 4;
-    std::vector<std::uint64_t> slots_;
-    std::size_t mask_;
-};
 
 template <int WORDS>
 struct Window {
@@ -186,6 +156,55 @@ struct Window {
         for (int i = 0; i < WORDS; i++) value = mix(value ^ words[i]) + i;
         return value;
     }
+};
+
+/**
+ * Set of frontier states known to lead nowhere, keyed exactly (no hash-only matches): 4-way buckets,
+ * and a full bucket evicts one entry. Eviction only costs repeated work, so an exhausted search
+ * is a proof that no tiling exists.
+ */
+template <int WORDS>
+class FailedStates {
+public:
+    explicit FailedStates(int bits) : slots_(std::size_t{1} << bits), mask_((std::size_t{1} << bits) - 1) {}
+
+    /** The largest power-of-two slot count that fits in the given memory, at least one bucket. */
+    static int bitsFor(int megabytes) {
+        const std::size_t slots = (static_cast<std::size_t>(megabytes) << 20) / sizeof(Slot);
+        int bits = 2;
+        while ((std::size_t{1} << (bits + 1)) <= slots) bits++;
+        return bits;
+    }
+
+    bool contains(long long position, const Window<WORDS>& window) const {
+        const std::size_t base = window.hash(position) & mask_ & ~(WAYS - 1);
+        for (std::size_t i = 0; i < WAYS; i++) {
+            const Slot& slot = slots_[base + i];
+            if (slot.position == position && slot.window.words == window.words) return true;
+        }
+        return false;
+    }
+
+    void insert(long long position, const Window<WORDS>& window) {
+        const std::uint64_t hash = window.hash(position);
+        const std::size_t base = hash & mask_ & ~(WAYS - 1);
+        std::size_t target = base + ((hash >> 40) & (WAYS - 1));
+        for (std::size_t i = 0; i < WAYS; i++)
+            if (slots_[base + i].position < 0) {
+                target = base + i;
+                break;
+            }
+        slots_[target] = {position, window};
+    }
+
+private:
+    struct Slot {
+        long long position = -1;
+        Window<WORDS> window;
+    };
+    static constexpr std::size_t WAYS = 4;
+    std::vector<Slot> slots_;
+    std::size_t mask_;
 };
 
 /** One orientation seen from its anchor: its first cell in column-major order. */
@@ -295,7 +314,7 @@ int run(const Options& options) {
     std::vector<Frame> stack;
     stack.reserve(static_cast<std::size_t>(area / cellsPerCopy) + 1);
     stack.push_back({0, {}, 0, -1});
-    FailedCache failed(options.cacheBits);
+    FailedStates<WORDS> failed(FailedStates<WORDS>::bitsFor(options.cacheMegabytes));
     long long nodes = 0;
     bool found = false;
 
@@ -319,7 +338,7 @@ int run(const Options& options) {
                 found = true;
                 break;
             }
-            if (failed.contains(next.hash(position))) continue;
+            if (failed.contains(position, next)) continue;
             if (pocketLimit > 1 && closesSmallPocket(next, position, column, row, a, options.width, height, pocketLimit))
                 continue;
             if (++nodes > options.budget) {
@@ -333,7 +352,7 @@ int run(const Options& options) {
         }
         if (found) break;
         if (pushed) continue;
-        failed.insert(frame.window.hash(frame.position));
+        failed.insert(frame.position, frame.window);
         stack.pop_back();
     }
 

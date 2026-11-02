@@ -1,7 +1,12 @@
 import type { Placement } from "../../src/core/model";
 import { Polyomino } from "../../src/core/polyomino";
 import { tileRectangleExactCover } from "../../src/core/exact-cover";
-import { tileRectangleNative, type NativeSettings } from "./native-tiler";
+import {
+  tileRectangleNative,
+  type NativeResult,
+  type NativeSettings,
+} from "./native-tiler";
+import { tileRectangleSat, type SatSettings } from "./sat-tiler";
 
 export interface WitnessParameters {
   readonly stepBudget: number;
@@ -28,8 +33,6 @@ export type WitnessOutcome = {
     }
   /** Every candidate was searched to the end without a tiling: contradicts the data. */
   | { readonly kind: "impossible" }
-  /** The native search ran out of candidates, but its lossy cache makes that no proof. */
-  | { readonly kind: "exhausted" }
   | { readonly kind: "budget" }
 );
 
@@ -73,20 +76,46 @@ export interface NativeWitnessSettings extends Omit<NativeSettings, "seed"> {
 }
 
 /** Like runWitnessJob, with the native frontier tiler and random restarts. */
-export async function runWitnessJobNative(
+export function runWitnessJobNative(
   job: WitnessJob,
   settings: NativeWitnessSettings,
+): Promise<WitnessOutcome> {
+  return runWithRestarts(job, settings.seeds, (polyomino, a, b, seed) =>
+    tileRectangleNative(polyomino, a, b, { ...settings, seed }),
+  );
+}
+
+/** Like runWitnessJob, with the SAT tiler: one attempt per rectangle. */
+export function runWitnessJobSat(
+  job: WitnessJob,
+  settings: SatSettings,
+): Promise<WitnessOutcome> {
+  return runWithRestarts(job, [0], (polyomino, a, b) =>
+    tileRectangleSat(polyomino, a, b, settings),
+  );
+}
+
+/**
+ * Tries each rectangle once per seed until one is tiled. Both searches are exact, so a
+ * rectangle searched to the end has no tiling and is dropped; all dropped contradicts the data.
+ */
+async function runWithRestarts(
+  job: WitnessJob,
+  seeds: readonly number[],
+  search: (
+    polyomino: Polyomino,
+    a: number,
+    b: number,
+    seed: number,
+  ) => Promise<NativeResult>,
 ): Promise<WitnessOutcome> {
   const started = performance.now();
   const polyomino = Polyomino.fromId(job.id);
   const open = new Set(job.rectangles.map((_, index) => index));
-  for (const seed of settings.seeds)
+  for (const seed of seeds)
     for (const [index, [a, b]] of job.rectangles.entries()) {
       if (!open.has(index)) continue;
-      const result = await tileRectangleNative(polyomino, a, b, {
-        ...settings,
-        seed,
-      });
+      const result = await search(polyomino, a, b, seed);
       if (result.kind === "found")
         return {
           job,
@@ -101,7 +130,7 @@ export async function runWitnessJobNative(
     }
   return {
     job,
-    kind: open.size === 0 ? "exhausted" : "budget",
+    kind: open.size === 0 ? "impossible" : "budget",
     milliseconds: performance.now() - started,
   };
 }

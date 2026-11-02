@@ -5,6 +5,7 @@ import type { PrimeRectangles } from "../src/core/model";
 import { Polyomino } from "../src/core/polyomino";
 import {
   runWitnessJobNative,
+  runWitnessJobSat,
   type NativeWitnessSettings,
   type WitnessJob,
   type WitnessOutcome,
@@ -24,13 +25,15 @@ const USAGE = `Stores a tiling for every property that names a rectangle but has
 Usage: npx tsx tools/witnesses.ts [options]
 
   --engine <name>    native (default): the C++ frontier tiler in tools/cpp, built on first use;
-                     js: exact cover in worker threads
+                     sat: CaDiCaL through tools/sat/sat_tiler.py (needs uv), strong on rectangles
+                     whose short side is 25 or more; js: exact cover in worker threads
   --kinds <list>     any of square,odd,prime (default all)
-  --max-area <n>     skip rectangles larger than n cells (default: none for native, 5000 for js,
-                     whose exact cover builds every placement up front and runs out of memory)
+  --max-area <n>     skip rectangles larger than n cells (default: none for native, 40000 for
+                     sat and 5000 for js, which build every placement up front)
+  --seconds <s>      sat: solver time limit per rectangle (default 120)
   --budget <steps>   step (js) or node (native) budget of one rectangle search (default 20000000)
   --seeds <a-b>      native: restart seeds, each with the full budget (default 1-4)
-  --cache-bits <b>   native: log2 entries of the failed-state cache, 8 bytes each (default 24)
+  --cache-mb <m>     native: failed-state cache per process in MB (default 256)
   --pocket-limit <p> native: reject moves that leave an empty pocket under p cells (default 2)
   --workers <n>      parallel searches (default: all cores)
   --only <ids>       comma-separated IDs
@@ -40,8 +43,12 @@ Squares and prime rectangles have known sizes; an odd tiling tries every rectang
 odd order's number of copies. Jobs run smallest first and each tiling is written as soon as it is
 found. Existing tiling files are never overwritten. Progress goes to output/witnesses/run.log.`;
 
-const JS_MAX_AREA = 5000;
-const ENGINES = ["native", "js"] as const;
+const ENGINES = ["native", "sat", "js"] as const;
+const MAX_AREA: Record<(typeof ENGINES)[number], number> = {
+  native: Number.MAX_SAFE_INTEGER,
+  sat: 40_000,
+  js: 5000,
+};
 const ALL_KINDS = ["square", "odd", "prime"] as const;
 
 function argument(name: string, fallback: string): string {
@@ -58,10 +65,7 @@ const engine = argument("--engine", "native");
 if (!(ENGINES as readonly string[]).includes(engine))
   throw new Error(`unknown engine "${engine}"; use ${ENGINES.join(", ")}`);
 const maxArea = Number(
-  argument(
-    "--max-area",
-    String(engine === "js" ? JS_MAX_AREA : Number.MAX_SAFE_INTEGER),
-  ),
+  argument("--max-area", String(MAX_AREA[engine as (typeof ENGINES)[number]])),
 );
 const seedRange = /^(\d+)-(\d+)$/.exec(argument("--seeds", "1-4"));
 if (seedRange === null) throw new Error("--seeds must look like 1-4");
@@ -79,15 +83,17 @@ const only = new Set(argument("--only", "").split(",").filter(Boolean));
 const dryRun = process.argv.includes("--dry-run");
 const nativeSettings: NativeWitnessSettings = {
   budget: parameters.stepBudget,
-  cacheBits: Number(argument("--cache-bits", "24")),
+  cacheMegabytes: Number(argument("--cache-mb", "256")),
   pocketLimit: Number(argument("--pocket-limit", "2")),
   seeds,
 };
+const satSettings = { seconds: Number(argument("--seconds", "120")) };
 for (const value of [
+  satSettings.seconds,
   workerCount,
   parameters.stepBudget,
   maxArea,
-  nativeSettings.cacheBits,
+  nativeSettings.cacheMegabytes,
   nativeSettings.pocketLimit,
 ])
   if (!Number.isInteger(value) || value < 1)
@@ -164,7 +170,9 @@ for (const job of jobs) counts[job.kind]++;
 const runParameters =
   engine === "js"
     ? { engine, ...parameters, maxArea }
-    : { engine, ...nativeSettings, maxArea };
+    : engine === "sat"
+      ? { engine, ...satSettings, maxArea }
+      : { engine, ...nativeSettings, maxArea };
 console.log(`${jobs.length} jobs`, counts, runParameters);
 if (dryRun) {
   for (const job of jobs)
@@ -179,7 +187,7 @@ appendFileSync(
   logPath,
   `\n# ${new Date().toISOString()} ${jobs.length} jobs ${JSON.stringify(runParameters)}\n`,
 );
-const tally = { found: 0, budget: 0, impossible: 0, exhausted: 0 };
+const tally = { found: 0, budget: 0, impossible: 0 };
 const NOTES: Record<WitnessJob["kind"], string> = {
   square: "Smallest square, found by exact-cover search (tools/witnesses.ts).",
   odd: "Smallest odd tiling, found by exact-cover search (tools/witnesses.ts).",
@@ -207,8 +215,6 @@ const record = (outcome: WitnessOutcome): void => {
   }
   if (outcome.kind === "impossible")
     line = `CONTRADICTION: ${line}; the data says this rectangle tiles`;
-  if (outcome.kind === "exhausted")
-    line = `CHECK: ${line}; the data says this tiles (the native cache is lossy, so not a proof)`;
   appendFileSync(logPath, `${line}\n`);
   if (outcome.kind !== "budget") console.log(line);
 };
@@ -223,12 +229,16 @@ if (engine === "js")
     record,
   );
 else {
-  ensureNativeTiler();
+  if (engine === "native") ensureNativeTiler();
   let next = 0;
   let done = 0;
   const lane = async (): Promise<void> => {
     for (let job = jobs[next++]; job !== undefined; job = jobs[next++]) {
-      record(await runWitnessJobNative(job, nativeSettings));
+      record(
+        await (engine === "sat"
+          ? runWitnessJobSat(job, satSettings)
+          : runWitnessJobNative(job, nativeSettings)),
+      );
       if (++done % 25 === 0) console.log(`${done}/${jobs.length} done`, tally);
     }
   };

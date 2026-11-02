@@ -11,7 +11,7 @@ import { runWitnessJobNative } from "../tools/lib/witness-job";
 
 const SETTINGS: NativeSettings = {
   budget: 5_000_000,
-  cacheBits: 16,
+  cacheMegabytes: 1,
   seed: 0,
   pocketLimit: 2,
 };
@@ -124,16 +124,16 @@ describe("runWitnessJobNative", () => {
           [2, 4],
         ],
       },
-      { budget: 1_000_000, cacheBits: 16, pocketLimit: 2, seeds: [1, 2] },
+      { budget: 1_000_000, cacheMegabytes: 1, pocketLimit: 2, seeds: [1, 2] },
     );
     expect(outcome.kind).toBe("found");
   });
 
-  it("reports exhausted when every candidate is exhausted", async () => {
+  it("reports impossible when every candidate is searched to the end", async () => {
     const outcome = await runWitnessJobNative(
       { id: "e080", kind: "odd", rectangles: [[3, 4]] },
-      { budget: 1_000_000, cacheBits: 16, pocketLimit: 2, seeds: [1] },
+      { budget: 1_000_000, cacheMegabytes: 1, pocketLimit: 2, seeds: [1] },
     );
-    expect(outcome.kind).toBe("exhausted");
+    expect(outcome.kind).toBe("impossible");
   });
 });
