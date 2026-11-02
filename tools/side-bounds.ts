@@ -18,12 +18,13 @@ Usage: npx tsx tools/side-bounds.ts --only <ids> [options]
   --workers <n>      sides searched at once (default 8)
 
 Every side from 1 up is searched (small ones take moments), so the half-strip claim covers all
-widths up to the bound. For each side s, one long run from the left wall decides every width
+widths up to the bound; a later run resumes after a bound whose note already has that claim. For each side s, one long run from the left wall decides every width
 past the column it reached (and the half-strip of width s), and the narrower widths are searched
 one by one (tools/lib/side-bound.ts). The bound moves up over contiguous ruled-out sides and is
 saved once it passes the recorded bound, with the order's lower bound that follows from it. Log: output/side-bounds/run.log.`;
 
 const SIDE_NOTE = /a side of at most (\d+)/;
+const HALF_STRIP_NOTE = /every half-strip of width at most (\d+)/;
 
 function argument(name: string, fallback: string): string {
   const index = process.argv.indexOf(name);
@@ -58,10 +59,12 @@ const pieces: PieceState[] = ids.map((id) => {
     throw new Error(
       `${id}: needs an open rectifiable record with a side bound`,
     );
+  // A half-strip clause means this tool proved the bound from side 1 already: resume after it.
+  const verified = HALF_STRIP_NOTE.exec(record.note ?? "");
   return {
     shape,
     recorded: Number(match[1]),
-    bound: 0,
+    bound: verified === null ? 0 : Number(verified[1]),
     stopped: false,
     ruledOut: new Set(),
   };
@@ -104,7 +107,8 @@ function saveBound(piece: PieceState): void {
 
 const jobs: { piece: PieceState; side: number }[] = [];
 for (let side = 1; side <= maxSide; side++)
-  for (const piece of pieces) jobs.push({ piece, side });
+  for (const piece of pieces)
+    if (side > piece.bound) jobs.push({ piece, side });
 
 ensureNativeTiler();
 let next = 0;
