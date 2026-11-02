@@ -4,7 +4,7 @@
     "rectifiable": {
       "status": "open",
       "ref": "site-solver",
-      "note": "Not resolved by this site's searches. Exact column sweeps rule out every rectangle with a side of at most 68 and every half-strip of width at most 68, and exhaustive search rules out every rectangle holding at most 24 copies."
+      "note": "Not resolved by this site's searches. Exact column searches rule out every rectangle with a side of at most 68, and every half-strip of width at most 68."
     },
     "order": {
       "status": "open",

@@ -206,7 +206,7 @@
   "site-solver": {
     "kind": "website",
     "authors": ["Rectifiable Polyominoes catalogue"],
-    "title": "Exhaustive searches by this catalogue's solver (tools/solve.ts)",
+    "title": "Computations by this catalogue's search tools",
     "venue": "this website; methods described in the guide page \"Computed results\"",
     "url": "#/guide/computations",
     "checked": true
