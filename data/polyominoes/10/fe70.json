@@ -16,12 +16,6 @@
       "value": true,
       "reason": "The half-strip of width 88 tiles: an explicit eventually periodic tiling (a 110-row start, then a 10-row block of 88 copies repeating forever), checked independently by exact cover. Width 96 tiles too; every width up to 87 is ruled out by exact search, so 88 is the narrowest.",
       "note": "The tiling grown from the closed end never reaches a flat edge, which is why no rectangle of width 88 exists."
-    },
-    "tilesPlane": {
-      "status": "computed",
-      "ref": "site-solver",
-      "value": true,
-      "reason": "A periodic tiling exists with 1 copy per period (period lattice (5, 0), (2, 2))."
     }
   }
 }

@@ -1,0 +1,16 @@
+{
+  "width": 8,
+  "height": 12,
+  "ref": "site-solver",
+  "note": "Found by exhaustive search (tools/solve.ts).",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 1, "x": 4, "y": 0 },
+    { "o": 4, "x": 1, "y": 2 },
+    { "o": 0, "x": 0, "y": 4 },
+    { "o": 2, "x": 3, "y": 4 },
+    { "o": 6, "x": 2, "y": 6 },
+    { "o": 3, "x": 0, "y": 7 },
+    { "o": 2, "x": 3, "y": 8 }
+  ]
+}

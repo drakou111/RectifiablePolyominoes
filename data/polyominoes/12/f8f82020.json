@@ -1,0 +1,16 @@
+{
+  "id": "f8f82020",
+  "properties": {
+    "rectifiable": {
+      "status": "open",
+      "ref": "site-solver",
+      "note": "Not resolved by this site's searches: no rectangle holding fewer than 201 copies can be tiled."
+    },
+    "order": {
+      "status": "open",
+      "lower": 201,
+      "ref": "site-solver",
+      "note": "Every rectangle holding fewer than 201 copies was ruled out by exhaustive search; the piece may not tile any rectangle."
+    }
+  }
+}

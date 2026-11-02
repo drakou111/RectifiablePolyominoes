@@ -20,6 +20,12 @@
       "lower": 231,
       "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
     },
+    "smallestRectangles": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": [[8, 12]],
+      "reason": "Every rectangle holding 8 copies was searched exhaustively."
+    },
     "smallestSquare": {
       "status": "computed",
       "ref": "site-solver",

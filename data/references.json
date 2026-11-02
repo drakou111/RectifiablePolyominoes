@@ -39,7 +39,7 @@
   },
   "klarner-gobel-1969": {
     "kind": "publication",
-    "authors": ["David A. Klarner", "F. Göbel"],
+    "authors": ["David A. Klarner", "F. G\u00c3\u00b6bel"],
     "title": "Packing boxes with congruent figures",
     "year": 1969,
     "venue": "Indagationes Mathematicae",
@@ -210,5 +210,13 @@
     "venue": "this website; methods described in the guide page \"Computed results\"",
     "url": "#/guide/computations",
     "checked": true
+  },
+  "contributed-classification": {
+    "kind": "website",
+    "authors": ["Contributed computation"],
+    "title": "Rectifiability of every free polyomino with 11, 12 and 13 cells",
+    "venue": "classification files supplied to this catalogue in 2026; the author's name is to be added",
+    "url": "#/sizes",
+    "checked": false
   }
 }

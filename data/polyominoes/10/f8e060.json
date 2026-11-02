@@ -16,12 +16,6 @@
       "status": "open",
       "ref": "site-solver",
       "note": "No half-strip of width at most 68 can be tiled (exact column search, tools/side-bounds.ts); wider half-strips are undecided."
-    },
-    "tilesPlane": {
-      "status": "computed",
-      "ref": "site-solver",
-      "value": true,
-      "reason": "A periodic tiling exists with 1 copy per period (period lattice (10, 0), (3, 1))."
     }
   }
 }
