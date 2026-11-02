@@ -1,12 +1,16 @@
 import { Worker } from "node:worker_threads";
 
-/** Runs jobs on worker threads, `workerCount` at a time, reporting progress every `every` results. */
+/**
+ * Runs jobs on worker threads, `workerCount` at a time, reporting progress every `every` results.
+ * `onOutcome` sees each result as it arrives, so long runs can save as they go.
+ */
 export async function runPool<Job, Outcome>(
   bootstrap: URL,
   workerData: unknown,
   jobs: readonly Job[],
   workerCount: number,
   every = 200,
+  onOutcome?: (outcome: Outcome) => void,
 ): Promise<Outcome[]> {
   const outcomes: Outcome[] = [];
   const started = Date.now();
@@ -29,6 +33,7 @@ export async function runPool<Job, Outcome>(
       };
       worker.on("message", (outcome: Outcome) => {
         outcomes.push(outcome);
+        onOutcome?.(outcome);
         if (outcomes.length % every === 0 || outcomes.length === jobs.length)
           console.log(
             `${outcomes.length}/${jobs.length} done, ${((Date.now() - started) / 1000).toFixed(0)} s`,
