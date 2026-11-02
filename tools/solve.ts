@@ -3,7 +3,6 @@ import { availableParallelism } from "node:os";
 import { join } from "node:path";
 import { Worker } from "node:worker_threads";
 import { enumerateFreePolyominoes } from "../src/core/enumerate";
-import type { PropertyRecord } from "../src/core/model";
 import { Polyomino } from "../src/core/polyomino";
 import {
   DATA_DIR,
@@ -12,6 +11,12 @@ import {
   printHelpIfAsked,
   reportConflicts,
 } from "./lib/store";
+import {
+  applySolveOutcome,
+  newSolveSummary,
+  SOLVER_REF,
+  type SolveSink,
+} from "./lib/solve-apply";
 import type { SolveJob, SolveOutcome, SolveParameters } from "./lib/solve-job";
 
 const USAGE = `Settles easy cases by exhaustive search and writes the results to data/.
@@ -33,8 +38,6 @@ Usage: npx tsx tools/solve.ts [options]
 Only empty properties are filled, and only from searches that finished. A search that hits its
 budget proves nothing and is listed as undecided. Results: status "computed", ref site-solver.
 A run summary is saved to output/solve/.`;
-
-const SOURCE_REF = "site-solver";
 
 function argument(name: string, fallback: string): string {
   const index = process.argv.indexOf(name);
@@ -173,163 +176,23 @@ await new Promise<void>((resolve, reject) => {
   for (const worker of workers) worker.feed();
 });
 
-const computed = (record: object): PropertyRecord<unknown> =>
-  ({
-    status: "computed",
-    ref: SOURCE_REF,
-    ...record,
-  }) as PropertyRecord<unknown>;
-const summary = {
-  ordersFound: 0,
-  blocked: 0,
-  stripBlocked: 0,
-  stripRectangles: 0,
-  tilingsWritten: 0,
-  undecided: [] as string[],
-  disagreements: [] as string[],
+const summary = newSolveSummary();
+const sink: SolveSink = {
+  store,
+  parameters,
+  summary,
+  dryRun,
+  toolName: "tools/solve.ts",
+  recordNonTiler: (shape, reason) =>
+    store.setProperty(
+      shape,
+      "rectifiable",
+      { status: "computed", ref: SOLVER_REF, value: false, reason },
+      "solver",
+    ),
 };
-for (const outcome of outcomes.sort((a, b) => (a.id < b.id ? -1 : 1))) {
-  const shape = Polyomino.fromId(outcome.id);
-  const entry = store.entry(shape);
-  const known = entry.properties;
-
-  if (typeof outcome.order === "object") {
-    summary.ordersFound++;
-    const { order, smallest } = outcome.order;
-    if (known.rectifiable?.value === false)
-      summary.disagreements.push(
-        `${outcome.id}: data says no rectangle, search found ${smallest[0]?.width}x${smallest[0]?.height}`,
-      );
-    if (known.order?.value !== undefined && known.order.value !== order)
-      summary.disagreements.push(
-        `${outcome.id}: data order ${String(known.order.value)}, search ${order}`,
-      );
-    if (!dryRun) {
-      const reason = `Every rectangle holding fewer than ${order} copies was searched exhaustively.`;
-      store.setProperty(
-        shape,
-        "rectifiable",
-        computed({ value: true, reason: "A tiling was found." }),
-        "solver",
-      );
-      store.setProperty(
-        shape,
-        "order",
-        computed({ value: order, reason }),
-        "solver",
-      );
-      store.setProperty(
-        shape,
-        "smallestRectangles",
-        computed({
-          value: smallest.map((s) => [s.width, s.height]),
-          reason: `Every rectangle holding ${order} copies was searched exhaustively.`,
-        }),
-        "solver",
-      );
-      for (const tiling of smallest)
-        if (
-          store.writeTiling(shape, {
-            ...tiling,
-            ref: SOURCE_REF,
-            note: "Found by exhaustive search (tools/solve.ts).",
-          })
-        )
-          summary.tilingsWritten++;
-    }
-  } else if (outcome.corner.kind === "blocked") {
-    summary.blocked++;
-    if (known.rectifiable?.value === true)
-      summary.disagreements.push(
-        `${outcome.id}: data says rectifiable, corner test says blocked`,
-      );
-    if (!dryRun)
-      store.setProperty(
-        shape,
-        "rectifiable",
-        computed({
-          value: false,
-          reason: `No arrangement of copies fills the ${outcome.corner.depth} x ${outcome.corner.depth} corner region of any rectangle (exhaustive search over all rectangle sizes).`,
-        }),
-        "solver",
-      );
-  } else if (outcome.strip.kind === "no-rectangle") {
-    summary.stripBlocked++;
-    const { bandHeight, states } = outcome.strip;
-    if (known.rectifiable?.value === true)
-      summary.disagreements.push(
-        `${outcome.id}: data says rectifiable, strip sweep says no rectangle`,
-      );
-    if (!dryRun)
-      store.setProperty(
-        shape,
-        "rectifiable",
-        computed({
-          value: false,
-          reason: `Column sweep along a wall: no rectangle of height below ${bandHeight} exists (exact search), and with a band of height ${bandHeight} the edge can never be completed flat again, whatever the width (${states} states explored).`,
-        }),
-        "solver",
-      );
-  } else if (outcome.strip.kind === "rectangle") {
-    summary.stripRectangles++;
-    const { width, height, placements } = outcome.strip;
-    if (known.rectifiable?.value === false)
-      summary.disagreements.push(
-        `${outcome.id}: data says no rectangle, strip sweep found ${width}x${height}`,
-      );
-    if (!dryRun) {
-      store.setProperty(
-        shape,
-        "rectifiable",
-        computed({
-          value: true,
-          reason: `A ${width} x ${height} tiling was found.`,
-        }),
-        "solver",
-      );
-      store.setProperty(
-        shape,
-        "order",
-        outcome.order === "none"
-          ? {
-              status: "open",
-              upper: placements.length,
-              lower: parameters.maxCopies + 1,
-              note: `Upper bound from a ${width} x ${height} tiling; every rectangle with at most ${parameters.maxCopies} copies was ruled out by exhaustive search.`,
-            }
-          : {
-              status: "open",
-              upper: placements.length,
-              note: `Upper bound from a ${width} x ${height} tiling.`,
-            },
-        "solver",
-      );
-      if (
-        store.writeTiling(shape, {
-          width,
-          height,
-          placements,
-          ref: SOURCE_REF,
-          note: `Found by the strip sweep (tools/solve.ts): the narrowest rectangle height that can be tiled is ${height}.`,
-        })
-      )
-        summary.tilingsWritten++;
-    }
-  } else if (known.rectifiable === undefined) {
-    summary.undecided.push(outcome.id);
-  }
-
-  if (!dryRun)
-    for (const tiling of outcome.tilings)
-      if (
-        store.writeTiling(shape, {
-          ...tiling,
-          ref: SOURCE_REF,
-          note: "Found by exhaustive search (tools/solve.ts) for a smallest rectangle recorded from the literature.",
-        })
-      )
-        summary.tilingsWritten++;
-}
+for (const outcome of outcomes.sort((a, b) => (a.id < b.id ? -1 : 1)))
+  applySolveOutcome(outcome, sink);
 
 const saved = dryRun ? "dry run, nothing written" : store.save();
 const seconds = (Date.now() - started) / 1000;
