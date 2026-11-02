@@ -94,12 +94,57 @@ export interface TilingPicture {
   readonly coloring?: Coloring;
 }
 
-/** Draws a tiling. `coloring` can be passed in to avoid recomputing it when switching modes. */
+/** A display cell outside the rectangle: the gap between folds, or the end of the last fold. */
+const BLANK = -2;
+
+export interface FoldedGrid {
+  readonly width: number;
+  readonly height: number;
+  /** Piece index per display cell (row-major), or BLANK. */
+  readonly grid: Int32Array;
+}
+
+/**
+ * Lays a long strip out like wrapped text: long side horizontal (a tall tiling is turned a
+ * quarter counterclockwise), cut into pieces of `foldLength` columns stacked with a blank row
+ * between them.
+ */
+export function foldStrip(
+  expanded: ExpandedTiling,
+  foldLength: number,
+): FoldedGrid {
+  const { width, height, grid } = expanded;
+  const turned = height > width;
+  const long = turned ? height : width;
+  const short = turned ? width : height;
+  const length = Math.min(foldLength, long);
+  const folds = Math.ceil(long / length);
+  const displayHeight = folds * short + folds - 1;
+  const display = new Int32Array(length * displayHeight).fill(BLANK);
+  for (let along = 0; along < long; along++) {
+    const fold = Math.floor(along / length);
+    const dx = along - fold * length;
+    for (let across = 0; across < short; across++) {
+      // Turning counterclockwise: original (x, y) = (short - 1 - across, along).
+      const piece = turned
+        ? grid[along * width + (short - 1 - across)]
+        : grid[across * width + along];
+      display[(fold * (short + 1) + across) * length + dx] = piece as number;
+    }
+  }
+  return { width: length, height: displayHeight, grid: display };
+}
+
+/**
+ * Draws a tiling. `coloring` can be passed in to avoid recomputing it when switching modes.
+ * With `foldLength`, a long strip is drawn folded (see foldStrip).
+ */
 export function renderTiling(
   expanded: ExpandedTiling,
   placements: readonly Placement[],
   mode: ColorMode,
   cachedColoring?: Coloring,
+  foldLength?: number,
 ): TilingPicture {
   const { width, height, grid } = expanded;
   const pieceCount = placements.length;
@@ -141,31 +186,38 @@ export function renderTiling(
     pieceColors.fill(OUTLINE_FILL);
   }
 
+  const display =
+    foldLength === undefined
+      ? { width, height, grid }
+      : foldStrip(expanded, foldLength);
   const fills = new Map<string, string>();
   let cellLines = "";
-  let borders = `M0 0H${width}V${height}H0Z`;
+  let borders = "";
   const drawGrid = width * height <= MAX_CELLS_WITH_GRID;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const piece = grid[y * width + x] as number;
+  const at = (x: number, y: number): number =>
+    x < 0 || y < 0 || x >= display.width || y >= display.height
+      ? BLANK
+      : (display.grid[y * display.width + x] as number);
+  for (let y = 0; y < display.height; y++) {
+    for (let x = 0; x < display.width; x++) {
+      const piece = at(x, y);
+      if (piece === BLANK) continue;
       const color = pieceColors[piece] ?? OUTLINE_FILL;
       fills.set(color, (fills.get(color) ?? "") + cellSquare(x, y));
-      if (x + 1 < width) {
-        const right = grid[y * width + x + 1];
-        if (right !== piece) borders += `M${x + 1} ${y}v1`;
-        else if (drawGrid) cellLines += `M${x + 1} ${y}v1`;
-      }
-      if (y + 1 < height) {
-        const below = grid[(y + 1) * width + x];
-        if (below !== piece) borders += `M${x} ${y + 1}h1`;
-        else if (drawGrid) cellLines += `M${x} ${y + 1}h1`;
-      }
+      if (at(x - 1, y) === BLANK) borders += `M${x} ${y}v1`;
+      if (at(x, y - 1) === BLANK) borders += `M${x} ${y}h1`;
+      const right = at(x + 1, y);
+      if (right !== piece) borders += `M${x + 1} ${y}v1`;
+      else if (drawGrid) cellLines += `M${x + 1} ${y}v1`;
+      const below = at(x, y + 1);
+      if (below !== piece) borders += `M${x} ${y + 1}h1`;
+      else if (drawGrid) cellLines += `M${x} ${y + 1}h1`;
     }
   }
 
   const root = baseSvg(
-    width,
-    height,
+    display.width,
+    display.height,
     mode === "outline" ? "tiling outline" : "tiling",
   );
   for (const [color, d] of fills)

@@ -351,6 +351,15 @@ summary {
   max-height: 200px;
 }
 
+.tiling-grid .tiling-card.strip {
+  flex: 1 1 100%;
+  max-width: none;
+}
+
+.tiling-grid .tiling-card.strip svg.tiling {
+  max-height: none;
+}
+
 .tiling-card.missing {
   border: 1px dashed var(--fg);
   opacity: 0.6;
