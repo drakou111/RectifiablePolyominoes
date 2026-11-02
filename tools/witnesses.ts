@@ -30,6 +30,7 @@ Usage: npx tsx tools/witnesses.ts [options]
   --kinds <list>     any of square,odd,prime (default all)
   --max-area <n>     skip rectangles larger than n cells (default: none for native, 40000 for
                      sat and 5000 for js, which build every placement up front)
+  --min-area <n>     skip rectangles smaller than n cells, e.g. to resume a run (default 1)
   --seconds <s>      sat: solver time limit per rectangle (default 120)
   --budget <steps>   step (js) or node (native) budget of one rectangle search (default 20000000)
   --seeds <a-b>      native: restart seeds, each with the full budget (default 1-4)
@@ -67,6 +68,7 @@ if (!(ENGINES as readonly string[]).includes(engine))
 const maxArea = Number(
   argument("--max-area", String(MAX_AREA[engine as (typeof ENGINES)[number]])),
 );
+const minArea = Number(argument("--min-area", "1"));
 const seedRange = /^(\d+)-(\d+)$/.exec(argument("--seeds", "1-4"));
 if (seedRange === null) throw new Error("--seeds must look like 1-4");
 const seeds: number[] = [];
@@ -93,6 +95,7 @@ for (const value of [
   workerCount,
   parameters.stepBudget,
   maxArea,
+  minArea,
   nativeSettings.cacheMegabytes,
   nativeSettings.pocketLimit,
 ])
@@ -125,7 +128,9 @@ for (const size of readdirSync(join(DATA_DIR, "polyominoes"))) {
       kind: WitnessJob["kind"],
       rectangles: [number, number][],
     ): void => {
-      const fitting = rectangles.filter(([a, b]) => a * b <= maxArea);
+      const fitting = rectangles.filter(
+        ([a, b]) => a * b >= minArea && a * b <= maxArea,
+      );
       if (fitting.length > 0)
         jobs.push({ id: shape.id, kind, rectangles: fitting });
     };

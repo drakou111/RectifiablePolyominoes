@@ -11,17 +11,27 @@ export interface SatSettings {
   readonly seconds: number;
 }
 
-let pythonPath: string | undefined;
+const pythonPaths = new Map<string, string>();
 
-/** The interpreter of the script's uv environment, resolved once so it can be killed directly. */
-function satPython(): string {
-  pythonPath ??= execFileSync(
+/**
+ * The interpreter of a uv script's environment, resolved once so the script can be run (and
+ * killed) directly. The script must print sys.executable when given --print-python.
+ */
+export function uvScriptPython(scriptPath: string): string {
+  const known = pythonPaths.get(scriptPath);
+  if (known !== undefined) return known;
+  const path = execFileSync(
     "uv",
-    ["run", "--quiet", SCRIPT_PATH, "--print-python"],
-    { encoding: "utf8", windowsHide: true },
+    ["run", "--quiet", scriptPath, "--print-python"],
+    {
+      encoding: "utf8",
+      windowsHide: true,
+    },
   ).trim();
-  if (pythonPath === "") throw new Error("uv returned no Python path");
-  return pythonPath;
+  if (path === "")
+    throw new Error(`uv returned no Python path for ${scriptPath}`);
+  pythonPaths.set(scriptPath, path);
+  return path;
 }
 
 /**
@@ -45,7 +55,9 @@ export function tileRectangleSat(
     ),
   };
   return new Promise((resolve, reject) => {
-    const child = spawn(satPython(), [SCRIPT_PATH], { windowsHide: true });
+    const child = spawn(uvScriptPython(SCRIPT_PATH), [SCRIPT_PATH], {
+      windowsHide: true,
+    });
     let timedOut = false;
     const timer = setTimeout(() => {
       timedOut = true;
