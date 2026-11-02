@@ -1,6 +1,10 @@
 import type { CatalogItem, TilingRef } from "../../core/catalog";
 import type { Coloring } from "../../core/coloring";
-import { PROPERTY_DEFINITIONS, STATUS_DESCRIPTIONS } from "../../core/model";
+import {
+  PROPERTY_DEFINITIONS,
+  STATUS_DESCRIPTIONS,
+  isNotApplicable,
+} from "../../core/model";
 import { ORIENTATION_COUNT, SYMMETRY_DESCRIPTIONS } from "../../core/polyomino";
 import { expandTiling } from "../../core/tiling";
 import { loadTiling } from "../../data";
@@ -53,7 +57,13 @@ function propertiesTable(
         "td",
         {},
         record === undefined
-          ? h("span", { class: "muted" }, "no data")
+          ? h(
+              "span",
+              { class: "muted" },
+              isNotApplicable(definition.key, item.properties)
+                ? "not applicable (tiles no rectangle)"
+                : "no data",
+            )
           : h(
               "span",
               { class: answerClass(record.value) },

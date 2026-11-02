@@ -173,6 +173,26 @@ export const PROPERTY_DEFINITIONS: readonly PropertyDefinition[] = [
   },
 ];
 
+/** Properties about rectangle tilings, meaningless for a piece that tiles no rectangle. */
+export const RECTANGLE_PROPERTY_KEYS: ReadonlySet<PropertyKey> = new Set([
+  "order",
+  "oddOrder",
+  "smallestRectangles",
+  "smallestSquare",
+  "primeRectangles",
+  "minColors",
+]);
+
+/** True when the property cannot have a value because the piece tiles no rectangle. */
+export function isNotApplicable(
+  key: PropertyKey,
+  properties: Properties,
+): boolean {
+  return (
+    RECTANGLE_PROPERTY_KEYS.has(key) && properties.rectifiable?.value === false
+  );
+}
+
 export const PROPERTY_KEYS: readonly PropertyKey[] = PROPERTY_DEFINITIONS.map(
   (definition) => definition.key,
 );

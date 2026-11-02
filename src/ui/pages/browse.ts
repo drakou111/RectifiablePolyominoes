@@ -1,5 +1,5 @@
 import { MAX_GENERATED_SIZE, type CatalogItem } from "../../core/catalog";
-import type { PropertyKey } from "../../core/model";
+import { isNotApplicable, type PropertyKey } from "../../core/model";
 import {
   SYMMETRY_DESCRIPTIONS,
   type SymmetryGroup,
@@ -141,7 +141,17 @@ function propertyCell(
   key: PropertyKey,
 ): HTMLTableCellElement {
   const record = item.properties[key];
-  if (record === undefined) return h("td", { class: "unknown" }, "-");
+  if (record === undefined)
+    return isNotApplicable(key, item.properties)
+      ? h(
+          "td",
+          {
+            class: "unknown",
+            title: "Tiles no rectangle, so this is undefined",
+          },
+          "n/a",
+        )
+      : h("td", { class: "unknown", title: "No data yet" }, "-");
   return h(
     "td",
     {

@@ -79,6 +79,15 @@ export function deriveProperties(polyomino: Polyomino): Properties {
         reason:
           "A square tiled by a-by-b bricks has a side divisible by both a and b (de Bruijn), so lcm(a, b) is smallest, and it works.",
       },
+      primeRectangles: {
+        status: "proven",
+        value: {
+          rectangles: [[Math.min(width, height), Math.max(width, height)]],
+          complete: true,
+        },
+        reason:
+          "Every rectangle tiled by a-by-b bricks can be cut into strips, and then into single bricks (de Bruijn, Klarner).",
+      },
       tilesPlane: { status: "proven", value: true, reason: RECTANGLE_REASON },
       minColors: {
         status: "proven",
