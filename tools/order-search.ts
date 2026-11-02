@@ -1,11 +1,7 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import {
-  CLASSIFICATION_DIR,
-  parseClassification,
-} from "../src/core/classification";
+import { CLASSIFICATION_DIR } from "../src/core/classification";
 import { deriveProperties, inferProperties } from "../src/core/derived";
-import { enumerateFreePolyominoes } from "../src/core/enumerate";
 import type {
   Placement,
   Properties,
@@ -22,7 +18,12 @@ import {
 } from "./lib/native-tiler";
 import { orderRecords, type CopyStep } from "./lib/order-plan";
 import { tileRectangleSat } from "./lib/sat-tiler";
-import { DataStore, PROJECT_ROOT, printHelpIfAsked } from "./lib/store";
+import {
+  DATA_DIR,
+  DataStore,
+  PROJECT_ROOT,
+  printHelpIfAsked,
+} from "./lib/store";
 
 const USAGE = `Searches for the order of pieces whose rectifiability is unknown or open.
 
@@ -38,8 +39,8 @@ Usage: npx tsx tools/order-search.ts [options]
   --workers <n>        pieces at once (default 16)
   --dry-run            list the pieces only
 
-Pieces listed in output/classification/<n>.txt (shown to tile no rectangle) are skipped; the
-file must exist for every scanned size. For each copy count k, every rectangle of area k * size that holds a copy is searched: the native
+Scanned sizes must be classified (output/classification/<n>.txt exists); the candidates are their
+entries in data/ whose rectifiability is open. For each copy count k, every rectangle of area k * size that holds a copy is searched: the native
 tiler first, then SAT. The first count with a tiling ends the piece once all its rectangles are
 decided. Rectifiable, order and smallest rectangles are written as far as the searches prove them
 (tools/lib/order-plan.ts), with the tilings found. Log: output/order-search/run.log.`;
@@ -77,28 +78,24 @@ const effective = (shape: Polyomino): Properties => {
   } as Properties;
   return { ...properties, ...inferProperties(properties) };
 };
-/** IDs shown to tile no rectangle (removed from data/, kept in output/classification/). */
-function knownNonTilers(size: number): Set<string> {
+/** A size is scanned only once it is classified, so every undecided piece has an entry. */
+function requireClassified(size: number): void {
   const path = join(PROJECT_ROOT, "output", CLASSIFICATION_DIR, `${size}.txt`);
   if (!existsSync(path))
     throw new Error(
-      `${path} is missing: without it every piece of size ${size} would look undecided`,
+      `${path} is missing: classify size ${size} first (tools/classify-size.ts)`,
     );
-  return new Set(
-    parseClassification(readFileSync(path, "utf8")).lines.map(
-      (line) => line.id,
-    ),
-  );
 }
 
 const pieces: Polyomino[] = [];
 if (only.length > 0) pieces.push(...only.map((id) => Polyomino.fromId(id)));
 else {
-  const groups = enumerateFreePolyominoes(settings.maxSize);
   for (let size = settings.minSize; size <= settings.maxSize; size++) {
-    const nonTilers = knownNonTilers(size);
-    for (const shape of groups[size - 1] ?? []) {
-      if (nonTilers.has(shape.id)) continue;
+    requireClassified(size);
+    const folder = join(DATA_DIR, "polyominoes", String(size));
+    if (!existsSync(folder)) continue;
+    for (const file of readdirSync(folder).sort()) {
+      const shape = Polyomino.fromId(file.replace(/\.json$/, ""));
       const rectifiable = effective(shape).rectifiable;
       if (rectifiable === undefined || rectifiable.status === "open")
         pieces.push(shape);
