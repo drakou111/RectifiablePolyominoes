@@ -4,13 +4,13 @@
     "rectifiable": {
       "status": "open",
       "ref": "site-solver",
-      "note": "Not resolved by this site's first searches (corner test, wall sweep up to band height 8, every rectangle with at most 10 copies)."
+      "note": "Not resolved by this site's searches: no rectangle holding fewer than 196 copies can be tiled."
     },
     "order": {
       "status": "open",
-      "lower": 11,
+      "lower": 196,
       "ref": "site-solver",
-      "note": "Every rectangle with at most 10 copies was ruled out by exhaustive search; the piece may not tile any rectangle."
+      "note": "Every rectangle holding fewer than 196 copies was ruled out by exhaustive search; the piece may not tile any rectangle."
     }
   }
 }
