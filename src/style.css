@@ -125,10 +125,50 @@ th {
   text-align: right;
 }
 
-.catalogue,
 .properties {
   display: block;
   overflow-x: auto;
+}
+
+/* The catalogue gets a wider page; a table still too wide scrolls inside its own box. */
+main:has(.catalogue-page),
+body:has(.catalogue-page) nav {
+  max-width: 1600px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.catalogue th,
+.catalogue td {
+  padding: 0.3rem 0.45rem;
+}
+
+.catalogue thead th {
+  vertical-align: bottom;
+}
+
+.catalogue .column-filters th {
+  padding-top: 0;
+  font-weight: normal;
+}
+
+.column-filters select {
+  width: 100%;
+  min-width: 4.2em;
+  font-size: 0.82em;
+  padding: 0.05em 0.1em;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+
+.column-filters select.active {
+  color: var(--fg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .catalogue td.thumb {
@@ -181,16 +221,10 @@ td.unknown {
 
 .filters {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
-}
-
-.filter-row {
-  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem 0.9rem;
+  margin-bottom: 0.8rem;
 }
 
 th.sortable button {
