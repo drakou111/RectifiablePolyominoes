@@ -15,13 +15,18 @@
     },
     "oddOrder": {
       "status": "open",
-      "lower": 39,
+      "lower": 171,
       "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
     },
     "smallestRectangles": {
       "status": "computed",
       "ref": "site-solver",
-      "value": [[4, 5]],
+      "value": [
+        [
+          4,
+          5
+        ]
+      ],
       "reason": "Every rectangle holding 2 copies was searched exhaustively."
     },
     "smallestSquare": {

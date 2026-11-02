@@ -17,7 +17,7 @@
     },
     "oddOrder": {
       "status": "open",
-      "lower": 45,
+      "lower": 133,
       "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
     },
     "smallestRectangles": {
@@ -25,7 +25,12 @@
       "ref": "reid-rectifiable-data",
       "refDetail": "8omino09_rect.html",
       "untraced": true,
-      "value": [[12, 16]]
+      "value": [
+        [
+          12,
+          16
+        ]
+      ]
     },
     "smallestSquare": {
       "status": "computed",
@@ -40,17 +45,50 @@
       "untraced": true,
       "value": {
         "rectangles": [
-          [12, 16],
-          [12, 24],
-          [14, 16],
-          [14, 24],
-          [16, 16],
-          [16, 18],
-          [16, 20],
-          [16, 22],
-          [18, 24],
-          [20, 24],
-          [22, 24]
+          [
+            12,
+            16
+          ],
+          [
+            12,
+            24
+          ],
+          [
+            14,
+            16
+          ],
+          [
+            14,
+            24
+          ],
+          [
+            16,
+            16
+          ],
+          [
+            16,
+            18
+          ],
+          [
+            16,
+            20
+          ],
+          [
+            16,
+            22
+          ],
+          [
+            18,
+            24
+          ],
+          [
+            20,
+            24
+          ],
+          [
+            22,
+            24
+          ]
         ],
         "complete": false
       },

@@ -1,6 +1,8 @@
 {
   "id": "fcf8",
-  "names": ["11-omino"],
+  "names": [
+    "11-omino"
+  ],
   "properties": {
     "rectifiable": {
       "status": "proven",
@@ -29,12 +31,18 @@
       "ref": "reid-rectifiable-data",
       "refDetail": "11omino5_rect.html",
       "untraced": true,
-      "value": [[2, 11]]
+      "value": [
+        [
+          2,
+          11
+        ]
+      ]
     },
     "smallestSquare": {
-      "status": "open",
-      "lower": 12,
-      "note": "Every smaller square was ruled out by exhaustive search."
+      "status": "computed",
+      "value": 22,
+      "ref": "site-solver",
+      "reason": "A stored 22x22 tiling exists, and every smaller square was ruled out by exhaustive search."
     },
     "primeRectangles": {
       "status": "open",
@@ -43,11 +51,26 @@
       "untraced": true,
       "value": {
         "rectangles": [
-          [2, 11],
-          [19, 231],
-          [21, 143],
-          [23, 99],
-          [25, 77]
+          [
+            2,
+            11
+          ],
+          [
+            19,
+            231
+          ],
+          [
+            21,
+            143
+          ],
+          [
+            23,
+            99
+          ],
+          [
+            25,
+            77
+          ]
         ],
         "complete": false
       },
