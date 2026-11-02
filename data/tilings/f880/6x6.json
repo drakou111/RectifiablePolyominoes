@@ -1,0 +1,14 @@
+{
+  "width": 6,
+  "height": 6,
+  "ref": "site-solver",
+  "note": "Smallest square, found by search (tools/witnesses.ts).",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 2, "x": 1, "y": 0 },
+    { "o": 0, "x": 0, "y": 2 },
+    { "o": 2, "x": 1, "y": 2 },
+    { "o": 0, "x": 0, "y": 4 },
+    { "o": 2, "x": 1, "y": 4 }
+  ]
+}

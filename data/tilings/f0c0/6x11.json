@@ -1,0 +1,19 @@
+{
+  "width": 6,
+  "height": 11,
+  "ref": "site-solver",
+  "note": "Prime rectangle, found by search (tools/witnesses.ts).",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 1, "x": 4, "y": 0 },
+    { "o": 2, "x": 0, "y": 1 },
+    { "o": 3, "x": 4, "y": 2 },
+    { "o": 5, "x": 0, "y": 3 },
+    { "o": 1, "x": 2, "y": 3 },
+    { "o": 5, "x": 1, "y": 5 },
+    { "o": 2, "x": 2, "y": 6 },
+    { "o": 3, "x": 0, "y": 7 },
+    { "o": 0, "x": 2, "y": 8 },
+    { "o": 2, "x": 2, "y": 9 }
+  ]
+}
