@@ -70,3 +70,20 @@ describe("runWitnessJobSat", () => {
     UV_TIMEOUT_MS,
   );
 });
+
+describe("tileRectangleSat time limit", () => {
+  it(
+    "kills the solver and reports budget",
+    async () => {
+      // A wide prime rectangle of a 12-cell piece takes far longer than one second.
+      const result = await tileRectangleSat(
+        Polyomino.fromId("fcf030"),
+        27,
+        704,
+        { seconds: 1 },
+      );
+      expect(result.kind).toBe("budget");
+    },
+    UV_TIMEOUT_MS,
+  );
+});
