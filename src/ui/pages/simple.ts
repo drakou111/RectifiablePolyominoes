@@ -1,4 +1,4 @@
-import { MAX_GENERATED_SIZE } from "../../core/catalog";
+import { MAX_GENERATED_SIZE, type CatalogItem } from "../../core/catalog";
 import { PROPERTY_DEFINITIONS, type ReferenceKind } from "../../core/model";
 import { polyominoHref, type SiteContext } from "../context";
 import { h, link } from "../dom";
@@ -9,10 +9,20 @@ import { GUIDE_TOPICS } from "./guide";
 
 const MAX_LISTED_CITATIONS = 30;
 
+/** Pieces with at least one open property: the rows of the open problems page. */
+function itemsWithOpenProperties(context: SiteContext): CatalogItem[] {
+  return context.catalog.items.filter((item) =>
+    PROPERTY_DEFINITIONS.some(
+      (definition) => item.properties[definition.key]?.status === "open",
+    ),
+  );
+}
+
 export function homePage(context: SiteContext): HTMLElement {
   const { items } = context.catalog;
   const entered = items.filter((item) => item.entry !== undefined).length;
-  const open = items.filter(
+  const open = itemsWithOpenProperties(context).length;
+  const rectangleOpen = items.filter(
     (item) => item.properties.rectifiable?.status === "open",
   ).length;
   const tilings = items.reduce((count, item) => count + item.tilings.length, 0);
@@ -41,7 +51,7 @@ export function homePage(context: SiteContext): HTMLElement {
         "li",
         {},
         link("#/open", "Open problems"),
-        `: ${open} polyominoes whose rectangle-tiling status is unknown.`,
+        `: ${open} polyominoes with open questions, ${rectangleOpen} of them on whether any rectangle can be tiled.`,
       ),
       h(
         "li",
@@ -71,11 +81,7 @@ export function homePage(context: SiteContext): HTMLElement {
 }
 
 export function openProblemsPage(context: SiteContext): HTMLElement {
-  const items = context.catalog.items.filter((item) =>
-    PROPERTY_DEFINITIONS.some(
-      (definition) => item.properties[definition.key]?.status === "open",
-    ),
-  );
+  const items = itemsWithOpenProperties(context);
   const rows = items.map((item) => {
     const openProperties = PROPERTY_DEFINITIONS.filter(
       (definition) => item.properties[definition.key]?.status === "open",
