@@ -31,12 +31,12 @@ describe("summarizeSize", () => {
     const summary = summarizeSize(items, 5);
     expect(summary.unknown.map((i) => i.id)).toEqual(["d", "e"]);
     expect(summary.tilers.map((i) => i.id)).toEqual(["b", "f", "a"]);
-    expect(summary.nonTilers).toBe(1);
   });
 
-  it("only counts the requested size", () => {
-    expect(summarizeSize(items, 6)).toMatchObject({ nonTilers: 1 });
-    expect(summarizeSize(items, 6).tilers).toEqual([]);
+  it("leaves out other sizes and pieces that tile no rectangle", () => {
+    const six = summarizeSize(items, 6);
+    expect([six.unknown, six.tilers]).toEqual([[], []]);
+    expect(summarizeSize(items, 5).unknown.map((i) => i.id)).not.toContain("c");
   });
 });
 

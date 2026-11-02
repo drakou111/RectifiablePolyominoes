@@ -1,4 +1,6 @@
 import { expect, it } from "vitest";
+import { COMPLETE_SIZE } from "../src/core/catalog";
+import type { PolyominoEntry, SizeTotals } from "../src/core/model";
 import { validateData, type DataFile } from "../src/core/validate";
 
 const DATA_PREFIX = "/data/";
@@ -35,25 +37,41 @@ it("data/ is valid", () => {
   expect(result.errors).toEqual([]);
 });
 
-// OEIS A054361: polyominoes without holes that do not tile the plane, n = 7..10. Pieces with
-// holes get their "no" by derivation, so stored records count only holeless pieces.
-const HOLELESS_NON_TILERS: Record<string, number> = {
-  "7": 3,
-  "8": 20,
-  "9": 198,
-  "10": 1390,
-};
+// OEIS A000105 (free polyominoes) and A001419 (free polyominoes with holes).
+const FREE_POLYOMINOES = [
+  1, 1, 2, 5, 12, 35, 108, 369, 1285, 4655, 17073, 63600, 238591,
+];
+const WITH_HOLES = [0, 0, 0, 0, 0, 0, 1, 6, 37, 195, 979, 4663, 21474];
 
-it("stored plane non-tilers match OEIS A054361", () => {
-  const entries = import.meta.glob<{
-    properties?: { tilesPlane?: { value?: boolean } };
-  }>("/data/polyominoes/**/*.json", { eager: true, import: "default" });
-  const counts: Record<string, number> = {};
-  for (const [path, entry] of Object.entries(entries)) {
-    const size = path.split("/")[3] as string;
-    if (entry.properties?.tilesPlane?.value === false)
-      counts[size] = (counts[size] ?? 0) + 1;
-  }
-  for (const [size, expected] of Object.entries(HOLELESS_NON_TILERS))
-    expect([size, counts[size]]).toEqual([size, expected]);
+const sizeFile = Object.values(
+  import.meta.glob<SizeTotals>("/data/sizes.json", {
+    eager: true,
+    import: "default",
+  }),
+)[0];
+
+it("data/sizes.json matches the known counts", () => {
+  expect(sizeFile?.complete).toBe(COMPLETE_SIZE);
+  for (let size = 1; size <= COMPLETE_SIZE; size++)
+    expect([size, sizeFile?.sizes[String(size)]]).toEqual([
+      size,
+      {
+        total: FREE_POLYOMINOES[size - 1],
+        withHoles: WITH_HOLES[size - 1],
+      },
+    ]);
+});
+
+it("keeps only pieces that tile a rectangle or are open", () => {
+  const entries = import.meta.glob<PolyominoEntry>(
+    "/data/polyominoes/**/*.json",
+    { eager: true, import: "default" },
+  );
+  const excluded = Object.values(entries)
+    .filter((entry) => {
+      const rectifiable = entry.properties.rectifiable;
+      return rectifiable?.value !== true && rectifiable?.status !== "open";
+    })
+    .map((entry) => entry.id);
+  expect(excluded).toEqual([]);
 });

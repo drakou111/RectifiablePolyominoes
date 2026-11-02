@@ -35,8 +35,9 @@ export const GUIDE_TOPICS: readonly GuideTopic[] = [
   },
   {
     slug: "plane",
-    title: "Tiling the plane",
-    summary: "Periodic tilings, and squares that no copies can cover.",
+    title: "Half-strips and the plane",
+    summary:
+      "Where the rectangle question gets hard: pieces that tile strips or the plane but maybe no rectangle.",
   },
   {
     slug: "colors",

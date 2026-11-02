@@ -26,13 +26,21 @@ describe("enumerateFreePolyominoes", () => {
 });
 
 describe("Catalog", () => {
-  it("includes hand-entered shapes beyond the generated sizes", () => {
+  it("holds the entries plus every rectangle up to the complete size", () => {
     const catalog = new Catalog(
       new Map([["fe70", { id: "fe70", properties: {} }]]),
       [],
       4,
     );
-    expect(catalog.items).toHaveLength(1 + 1 + 2 + 5 + 1);
+    // Rectangles 1x1, 1x2, 1x3, 1x4 and 2x2, then the entry.
+    expect(catalog.items.map((item) => item.id).sort()).toEqual([
+      "80",
+      "c0",
+      "c0c0",
+      "e0",
+      "f0",
+      "fe70",
+    ]);
     expect(catalog.get("fe70")?.size).toBe(10);
     expect(catalog.get("f0")?.properties.order?.value).toBe(1);
   });

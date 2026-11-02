@@ -1,6 +1,6 @@
-import { MAX_GENERATED_SIZE, type CatalogItem } from "../../core/catalog";
+import { COMPLETE_SIZE, type CatalogItem } from "../../core/catalog";
 import {
-  PROPERTY_DEFINITIONS,
+  SHOWN_PROPERTY_DEFINITIONS,
   type PropertyKey,
   type ReferenceKind,
 } from "../../core/model";
@@ -16,7 +16,7 @@ const MAX_LISTED_CITATIONS = 30;
 /** Pieces with at least one open property: the rows of the open problems page. */
 function itemsWithOpenProperties(context: SiteContext): CatalogItem[] {
   return context.catalog.items.filter((item) =>
-    PROPERTY_DEFINITIONS.some(
+    SHOWN_PROPERTY_DEFINITIONS.some(
       (definition) => item.properties[definition.key]?.status === "open",
     ),
   );
@@ -24,9 +24,11 @@ function itemsWithOpenProperties(context: SiteContext): CatalogItem[] {
 
 export function homePage(context: SiteContext): HTMLElement {
   const { items } = context.catalog;
-  const complete = items.filter(
-    (item) => item.size <= MAX_GENERATED_SIZE,
-  ).length;
+  const complete = items.filter((item) => item.size <= COMPLETE_SIZE).length;
+  const classified = Object.values(context.sizeTotals.sizes).reduce(
+    (sum, size) => sum + size.total,
+    0,
+  );
   const open = itemsWithOpenProperties(context).length;
   const rectangleOpen = items.filter(
     (item) => item.properties.rectifiable?.status === "open",
@@ -40,9 +42,9 @@ export function homePage(context: SiteContext): HTMLElement {
     h(
       "p",
       {},
-      "This is a catalogue of what is known about tiling rectangles with copies of a single polyomino, rotations and reflections allowed. ",
-      "For each polyomino it records whether some rectangle can be tiled, its order and odd order, the smallest rectangles and squares, ",
-      "the prime rectangles, whether it tiles the plane, and the fewest colors a rectangle tiling needs. ",
+      "This is a catalogue of polyominoes whose copies tile a rectangle, rotations and reflections allowed. ",
+      `Every polyomino with up to ${COMPLETE_SIZE} cells has been classified; the catalogue lists those that tile a rectangle and those still open. `,
+      "For each it records the order and odd order, the smallest rectangles and squares, the prime rectangles, and the fewest colors a rectangle tiling needs. ",
       "Every settled result links to its first publication, and recorded tilings can be viewed and downloaded.",
     ),
     h(
@@ -52,13 +54,13 @@ export function homePage(context: SiteContext): HTMLElement {
         "li",
         {},
         link("#/browse", "Catalogue"),
-        `: all ${complete} polyominoes with up to ${MAX_GENERATED_SIZE} cells, ${items.length - complete} selected larger ones, and ${tilings} recorded tilings.`,
+        `: the ${complete} polyominoes with up to ${COMPLETE_SIZE} cells that tile a rectangle or are open (out of ${classified.toLocaleString("en-US")} classified), ${items.length - complete} selected larger ones, and ${tilings} recorded tilings.`,
       ),
       h(
         "li",
         {},
         link("#/sizes", "Sizes"),
-        `: a page for each size, listing the pieces by order (complete up to ${MAX_GENERATED_SIZE} cells).`,
+        `: how many polyominoes of each size tile a rectangle, with a page per size listing them by order.`,
       ),
       h(
         "li",
@@ -111,7 +113,7 @@ export function openProblemsPage(
   context: SiteContext,
   params: URLSearchParams,
 ): HTMLElement {
-  const groups = PROPERTY_DEFINITIONS.map((definition) => ({
+  const groups = SHOWN_PROPERTY_DEFINITIONS.map((definition) => ({
     definition,
     items: context.catalog.items.filter(
       (item) => item.properties[definition.key]?.status === "open",

@@ -6,7 +6,7 @@ import {
 } from "../../core/tiling-groups";
 import type { Coloring } from "../../core/coloring";
 import {
-  PROPERTY_DEFINITIONS,
+  SHOWN_PROPERTY_DEFINITIONS,
   STATUS_DESCRIPTIONS,
   isNotApplicable,
 } from "../../core/model";
@@ -18,7 +18,9 @@ import { append, h, link, type Child } from "../dom";
 import {
   answerClass,
   citationLink,
+  isSelfEvident,
   leadSummary,
+  SELF_EVIDENT_KEYS,
   summarizeProperty,
   statusBadge,
 } from "../format";
@@ -34,23 +36,31 @@ function propertiesTable(
   item: CatalogItem,
   context: SiteContext,
 ): HTMLTableElement {
-  const rows = PROPERTY_DEFINITIONS.map((definition) => {
+  const selfEvident = isSelfEvident(item);
+  const rows = SHOWN_PROPERTY_DEFINITIONS.map((definition) => {
     const record = item.properties[definition.key];
     const derived =
       item.derivedKeys.has(definition.key) &&
       item.entry?.properties[definition.key] === undefined;
+    const evident = selfEvident && SELF_EVIDENT_KEYS.has(definition.key);
     const source =
       record === undefined
         ? null
-        : record.ref !== undefined
-          ? citationLink(
-              record.ref,
-              context.references.get(record.ref),
-              record.refDetail,
+        : evident
+          ? h(
+              "span",
+              { class: "muted" },
+              "shown by the stored tiling; fewer copies ruled out by exhaustive search",
             )
-          : derived
-            ? h("span", { class: "muted" }, "derived automatically")
-            : null;
+          : record.ref !== undefined
+            ? citationLink(
+                record.ref,
+                context.references.get(record.ref),
+                record.refDetail,
+              )
+            : derived
+              ? h("span", { class: "muted" }, "derived automatically")
+              : null;
     return h(
       "tr",
       {},
@@ -90,7 +100,8 @@ function propertiesTable(
         "td",
         {},
         source,
-        record?.untraced &&
+        !evident &&
+          record?.untraced &&
           h(
             "span",
             {
@@ -100,7 +111,7 @@ function propertiesTable(
             },
             "untraced",
           ),
-        record?.reason && h("div", {}, record.reason),
+        !evident && record?.reason && h("div", {}, record.reason),
         record?.note && h("div", { class: "muted" }, record.note),
       ),
     );

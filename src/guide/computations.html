@@ -73,20 +73,6 @@
   same way.
 </p>
 
-<h2>Plane tilings</h2>
-<p>
-  A tiling of a torus (the plane modulo a lattice) repeats into a periodic
-  tiling of the plane. The search tries every lattice whose fundamental domain
-  holds up to a few copies. For the other direction, if no arrangement of copies
-  covers a square, even with copies sticking out on every side, the piece does
-  not tile the plane, since every plane tiling covers every square. Pieces these
-  searches left open were finished with a SAT solver
-  (<code>tools/plane-sat.ts</code>), which handles more copies per period and
-  larger squares. Every polyomino with up to 10 cells is now decided, and the
-  numbers that do not tile the plane agree with OEIS A054361 for every size from
-  7 to 10.
-</p>
-
 <h2>Finding tilings to show</h2>
 <p>
   Many results are known without a picture: Reid's lists, for instance, give
@@ -108,6 +94,15 @@
   rectangle with that many copies (or that square) is searched. If all are ruled
   out, the lower bound moves up; the first tiling found sets the upper bound and
   is stored. When the two meet, the value is settled.
+</p>
+
+<h2>Which pieces are listed</h2>
+<p>
+  Every free polyomino up to the complete size (see the Sizes page) was run
+  through the corner test and the strip sweep, then through the deeper order
+  search for whatever they left open (<code>tools/order-search.ts</code>). The
+  catalogue keeps the pieces that tile a rectangle and the ones still open; the
+  rest were shown to tile no rectangle and are only counted.
 </p>
 
 <h2>Excluding whole sides</h2>

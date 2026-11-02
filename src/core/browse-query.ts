@@ -11,6 +11,11 @@ export const YES_NO_KEYS: ReadonlySet<PropertyKey> = new Set([
   "tilesPlane",
 ]);
 
+/*
+ * The catalogue lists only pieces that tile a rectangle or are open, so "no" (for yes/no
+ * properties) and "n/a" (for rectangle properties) cannot occur and are not offered.
+ */
+
 export const PROPERTY_FILTER_OPTIONS: Record<
   "yesNo" | "valued",
   readonly (readonly [Standing | "any", string])[]
@@ -18,7 +23,6 @@ export const PROPERTY_FILTER_OPTIONS: Record<
   yesNo: [
     ["any", "any"],
     ["yes", "yes"],
-    ["no", "no"],
     ["open", "open"],
     ["none", "no data"],
   ],
@@ -27,7 +31,6 @@ export const PROPERTY_FILTER_OPTIONS: Record<
     ["value", "known"],
     ["open", "open"],
     ["none", "no data"],
-    ["na", "n/a"],
   ],
 };
 

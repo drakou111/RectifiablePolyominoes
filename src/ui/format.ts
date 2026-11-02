@@ -152,3 +152,28 @@ export function leadSummary(item: CatalogItem): string {
     ? `Order ${order.value}: no rectangle is tiled by fewer copies.`
     : `Order ${order.value}: the smallest ${sizes.length === 1 ? "rectangle is" : "rectangles are"} ${sizeText}.`;
 }
+
+/** At or below this order, the stored tiling and an exhaustive search show the result directly. */
+export const SELF_EVIDENT_ORDER = 10;
+export const SELF_EVIDENT_KEYS = new Set<string>([
+  "rectifiable",
+  "order",
+  "smallestRectangles",
+]);
+
+/** True when the smallest rectangle's tiling is stored and the order is small. */
+export function isSelfEvident(item: CatalogItem): boolean {
+  const order = item.properties.order?.value;
+  const smallest = item.properties.smallestRectangles?.value ?? [];
+  return (
+    order !== undefined &&
+    order <= SELF_EVIDENT_ORDER &&
+    smallest.some(([a, b]) =>
+      item.tilings.some(
+        (tiling) =>
+          (tiling.width === a && tiling.height === b) ||
+          (tiling.width === b && tiling.height === a),
+      ),
+    )
+  );
+}

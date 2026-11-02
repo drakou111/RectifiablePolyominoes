@@ -1,5 +1,5 @@
 import "./style.css";
-import { loadCatalog, loadReferences } from "./data";
+import { loadCatalog, loadReferences, loadSizeTotals } from "./data";
 import type { SiteContext } from "./ui/context";
 import { h } from "./ui/dom";
 import { browsePage } from "./ui/pages/browse";
@@ -16,6 +16,7 @@ if (main === null) throw new Error("index.html needs a <main> element");
 const context: SiteContext = {
   catalog: loadCatalog(),
   references: loadReferences(),
+  sizeTotals: loadSizeTotals(),
 };
 
 function render(): void {

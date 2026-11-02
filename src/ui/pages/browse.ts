@@ -1,4 +1,4 @@
-import { MAX_GENERATED_SIZE, type CatalogItem } from "../../core/catalog";
+import { COMPLETE_SIZE, type CatalogItem } from "../../core/catalog";
 import {
   PROPERTY_FILTER_OPTIONS,
   YES_NO_KEYS,
@@ -31,6 +31,9 @@ const SIZE_NAMES = [
   "Octominoes",
   "Nonominoes",
   "Decominoes",
+  "Hendecominoes",
+  "Dodecominoes",
+  "Tridecominoes",
 ];
 
 /** "Pentominoes", or "11-ominoes" past the named sizes. */
@@ -55,7 +58,6 @@ const PROPERTY_COLUMNS: readonly {
   { key: "smallestSquare", label: "Square", title: "Smallest square" },
   { key: "minColors", label: "Colors", title: "Fewest colors" },
   { key: "tilesHalfStrip", label: "Half-strip", title: "Tiles a half-strip" },
-  { key: "tilesPlane", label: "Plane", title: "Tiles the plane" },
 ];
 const PROPERTY_COLUMN_KEYS = new Set<string>(
   PROPERTY_COLUMNS.map((column) => column.key),
@@ -477,7 +479,9 @@ export function browsePage(
     h(
       "p",
       {},
-      `Every free polyomino with up to ${MAX_GENERATED_SIZE} cells, and selected larger ones. `,
+      `Every polyomino with up to ${COMPLETE_SIZE} cells that tiles a rectangle or is open, and selected larger ones; `,
+      link("#/sizes", "Sizes"),
+      " gives the counts. ",
       "Click a heading to sort by it (again to reverse); the menus under the headings filter the rows.",
     ),
     controls,

@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { CatalogItem } from "../src/core/catalog";
 import type { Properties } from "../src/core/model";
 import { Polyomino } from "../src/core/polyomino";
-import { leadSummary, summarizeProperty } from "../src/ui/format";
+import {
+  isSelfEvident,
+  leadSummary,
+  summarizeProperty,
+} from "../src/ui/format";
 
 const item = (id: string, properties: Properties): CatalogItem =>
   ({
@@ -66,5 +70,31 @@ describe("leadSummary", () => {
     ).toBe(
       "Not known whether copies tile any rectangle; a rectangle would need at least 477 copies.",
     );
+  });
+});
+
+describe("isSelfEvident", () => {
+  const tiling = (width: number, height: number) => ({
+    polyominoId: "f040",
+    width,
+    height,
+    path: `tilings/f040/${width}x${height}.json`,
+  });
+  const withOrder = (order: number, tilings: object[]): CatalogItem =>
+    ({
+      id: "f040",
+      polyomino: Polyomino.fromId("f040"),
+      tilings,
+      properties: {
+        rectifiable: { status: "proven", value: true },
+        order: { status: "proven", value: order },
+        smallestRectangles: { status: "proven", value: [[5, 10]] },
+      },
+    }) as unknown as CatalogItem;
+
+  it("needs a small order and a stored smallest-rectangle tiling", () => {
+    expect(isSelfEvident(withOrder(10, [tiling(10, 5)]))).toBe(true);
+    expect(isSelfEvident(withOrder(10, []))).toBe(false);
+    expect(isSelfEvident(withOrder(11, [tiling(10, 5)]))).toBe(false);
   });
 });

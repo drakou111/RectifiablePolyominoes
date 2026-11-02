@@ -1,5 +1,10 @@
 import { Catalog, parseTilingPath } from "./core/catalog";
-import type { PolyominoEntry, Reference, TilingFile } from "./core/model";
+import type {
+  PolyominoEntry,
+  Reference,
+  SizeTotals,
+  TilingFile,
+} from "./core/model";
 // All entry files as one module (see vite.config.ts): thousands of separate imports load slowly in dev.
 import entryList from "virtual:polyomino-entries";
 
@@ -26,6 +31,17 @@ export function loadCatalog(): Catalog {
     parseTilingPath(relative(path)),
   );
   return new Catalog(entries, tilings);
+}
+
+const sizeModules: Record<string, SizeTotals> = import.meta.glob(
+  "/data/sizes.json",
+  { eager: true, import: "default" },
+);
+
+export function loadSizeTotals(): SizeTotals {
+  const totals = Object.values(sizeModules)[0];
+  if (totals === undefined) throw new Error("data/sizes.json is missing");
+  return totals;
 }
 
 export function loadReferences(): ReadonlyMap<string, Reference> {

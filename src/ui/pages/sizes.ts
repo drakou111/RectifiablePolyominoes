@@ -1,4 +1,4 @@
-import { MAX_GENERATED_SIZE, type CatalogItem } from "../../core/catalog";
+import type { CatalogItem } from "../../core/catalog";
 import type { PropertyKey } from "../../core/model";
 import { catalogueSizes, summarizeSize } from "../../core/size-summary";
 import { polyominoHref, type SiteContext } from "../context";
@@ -18,15 +18,50 @@ const COLUMNS: readonly {
   { key: "minColors", label: "Fewest colors" },
 ];
 
-const isComplete = (size: number): boolean => size <= MAX_GENERATED_SIZE;
+/** One size's numbers; `total` and `tileNone` are known only for fully classified sizes. */
+interface SizeCounts {
+  readonly total?: number;
+  readonly tilers: number;
+  readonly open: number;
+  readonly tileNone?: number;
+}
 
-/** Every size with its counts: which sizes are enumerated in full, and how they sort out. */
+function sizeCounts(context: SiteContext, size: number): SizeCounts {
+  // Counted by the rectangle question; the size page lists open orders separately.
+  const pieces = context.catalog.items.filter((item) => item.size === size);
+  const tilers = pieces.filter(
+    (item) => item.properties.rectifiable?.value === true,
+  ).length;
+  const open = pieces.length - tilers;
+  const total =
+    size <= context.sizeTotals.complete
+      ? context.sizeTotals.sizes[String(size)]?.total
+      : undefined;
+  if (total === undefined) return { tilers, open };
+  return { total, tilers, open, tileNone: total - tilers - open };
+}
+
+/** All sizes that are classified in full, then the larger ones with selected pieces. */
+function shownSizes(context: SiteContext): number[] {
+  const complete = Array.from(
+    { length: context.sizeTotals.complete },
+    (_, i) => i + 1,
+  );
+  return [
+    ...new Set([...complete, ...catalogueSizes(context.catalog.items)]),
+  ].sort((a, b) => a - b);
+}
+
+const plural = (count: number, one: string, many: string): string =>
+  `${count} ${count === 1 ? one : many}`;
+
+/** Every size with its counts: which sizes are classified in full, and what the catalogue keeps. */
 export function sizesPage(context: SiteContext): HTMLElement {
-  const { items } = context.catalog;
-  const rows = catalogueSizes(items).map((size) => {
-    const summary = summarizeSize(items, size);
-    const total =
-      summary.unknown.length + summary.tilers.length + summary.nonTilers;
+  const rows = shownSizes(context).map((size) => {
+    const counts = sizeCounts(context, size);
+    const complete = counts.total !== undefined;
+    const muted = (text: string): HTMLElement =>
+      h("span", { class: "muted" }, text);
     return h(
       "tr",
       {},
@@ -34,20 +69,19 @@ export function sizesPage(context: SiteContext): HTMLElement {
       h("td", { class: "numeric" }, size),
       h(
         "td",
-        {},
-        isComplete(size)
-          ? "all"
-          : h("span", { class: "muted" }, "selected only"),
+        { class: "numeric" },
+        complete ? counts.total : muted("not classified"),
       ),
-      h("td", { class: "numeric" }, total),
-      h("td", { class: "numeric" }, summary.tilers.length),
-      h("td", { class: "numeric" }, summary.nonTilers),
+      h("td", { class: "numeric" }, counts.tilers),
       h(
         "td",
-        {
-          class: summary.unknown.length > 0 ? "numeric status-open" : "numeric",
-        },
-        summary.unknown.length,
+        { class: counts.open > 0 ? "numeric status-open" : "numeric" },
+        counts.open,
+      ),
+      h(
+        "td",
+        { class: "numeric" },
+        counts.tileNone === undefined ? muted("-") : counts.tileNone,
       ),
     );
   });
@@ -58,8 +92,9 @@ export function sizesPage(context: SiteContext): HTMLElement {
     h(
       "p",
       {},
-      `Every free polyomino with up to ${MAX_GENERATED_SIZE} cells is in the catalogue and has been classified. `,
-      "Larger sizes hold only selected pieces with published or computed results, so their counts say nothing about all polyominoes of that size.",
+      `Every free polyomino with up to ${context.sizeTotals.complete} cells has been classified. `,
+      "The catalogue keeps the ones that tile a rectangle and the ones still open; every other one was shown to tile no rectangle. ",
+      "Larger sizes hold only selected pieces with published or computed results.",
     ),
     h(
       "div",
@@ -75,11 +110,10 @@ export function sizesPage(context: SiteContext): HTMLElement {
             {},
             h("th", {}, "Size"),
             h("th", { class: "numeric" }, "Cells"),
-            h("th", {}, "Included"),
-            h("th", { class: "numeric" }, "Pieces"),
+            h("th", { class: "numeric" }, "Free polyominoes"),
             h("th", { class: "numeric" }, "Tile a rectangle"),
-            h("th", { class: "numeric" }, "Tile none"),
-            h("th", { class: "numeric" }, "Unknown"),
+            h("th", { class: "numeric" }, "Open"),
+            h("th", { class: "numeric" }, "Tile none (not listed)"),
           ),
         ),
         h("tbody", {}, ...rows),
@@ -142,7 +176,7 @@ function piecesTable(items: readonly CatalogItem[]): HTMLElement {
 /** One size: unknown orders first, then every rectangle tiler by order, highest first. */
 export function sizePage(context: SiteContext, argument: string): HTMLElement {
   const size = Number(argument);
-  const sizes = catalogueSizes(context.catalog.items);
+  const sizes = shownSizes(context);
   if (!Number.isInteger(size) || !sizes.includes(size))
     return h(
       "section",
@@ -151,8 +185,7 @@ export function sizePage(context: SiteContext, argument: string): HTMLElement {
       h("p", {}, "See ", link("#/sizes", "all sizes"), "."),
     );
   const summary = summarizeSize(context.catalog.items, size);
-  const total =
-    summary.unknown.length + summary.tilers.length + summary.nonTilers;
+  const counts = sizeCounts(context, size);
   const index = sizes.indexOf(size);
   const neighbour = (offset: number, text: string) => {
     const other = sizes[index + offset];
@@ -160,8 +193,6 @@ export function sizePage(context: SiteContext, argument: string): HTMLElement {
       ? ""
       : link(`#/size/${other}`, `${text} ${sizeName(other)}`);
   };
-  const noun = (count: number): string =>
-    `${count} ${count === 1 ? "piece" : "pieces"}`;
 
   return h(
     "section",
@@ -179,19 +210,9 @@ export function sizePage(context: SiteContext, argument: string): HTMLElement {
     h(
       "p",
       {},
-      isComplete(size)
-        ? `All ${total} free polyominoes with ${size} cells. `
-        : `${total} selected polyominoes with ${size} cells; this size is not enumerated in full. `,
-      `${summary.tilers.length} tile a rectangle, `,
-      summary.nonTilers > 0
-        ? link(
-            `#/browse?size=${size}&rectifiable=no`,
-            `${summary.nonTilers} tile none`,
-          )
-        : "none are known to tile no rectangle",
-      summary.unknown.length > 0
-        ? `, and ${noun(summary.unknown.length)} ${summary.unknown.length === 1 ? "is" : "are"} undecided.`
-        : ", and none are undecided.",
+      counts.total === undefined
+        ? `Selected polyominoes with ${size} cells: ${plural(counts.tilers, "tiles", "tile")} a rectangle${counts.open > 0 ? `, ${counts.open} open` : ""}. This size is not classified in full.`
+        : `Of the ${counts.total} free polyominoes with ${size} cells, ${plural(counts.tilers, "tiles", "tile")} a rectangle, ${counts.open} ${counts.open === 1 ? "is" : "are"} open, and the other ${counts.tileNone} tile no rectangle (not listed).`,
     ),
     summary.unknown.length > 0 &&
       h(

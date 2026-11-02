@@ -193,6 +193,22 @@ export function isNotApplicable(
   );
 }
 
+/**
+ * Properties the site shows. Every listed piece tiles a rectangle or is open, and every
+ * rectangle tiler tiles the plane, so "tiles the plane" says nothing here.
+ */
+export const SHOWN_PROPERTY_DEFINITIONS: readonly PropertyDefinition[] =
+  PROPERTY_DEFINITIONS.filter((definition) => definition.key !== "tilesPlane");
+
+/** data/sizes.json: every size up to `complete` was classified in full. */
+export interface SizeTotals {
+  readonly complete: number;
+  readonly note: string;
+  readonly sizes: Readonly<
+    Record<string, { readonly total: number; readonly withHoles: number }>
+  >;
+}
+
 export const PROPERTY_KEYS: readonly PropertyKey[] = PROPERTY_DEFINITIONS.map(
   (definition) => definition.key,
 );

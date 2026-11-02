@@ -45,7 +45,12 @@
 </ul>
 <p>Property keys and value types:</p>
 <ul>
-  <li><code>rectifiable</code>, <code>tilesPlane</code>: true or false.</li>
+  <li>
+    <code>rectifiable</code>, <code>tilesHalfStrip</code>: true or false. Every
+    entry tiles a rectangle or has <code>rectifiable</code> open; pieces that
+    tile no rectangle are not stored, only counted in
+    <code>data/sizes.json</code>.
+  </li>
   <li>
     <code>order</code>: a positive integer. <code>oddOrder</code>: an odd
     integer or <code>"none"</code>.

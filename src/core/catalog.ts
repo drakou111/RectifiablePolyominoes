@@ -1,14 +1,32 @@
-import { compareIds, enumerateFreePolyominoes } from "./enumerate";
+import { compareIds } from "./enumerate";
 import { deriveProperties, inferProperties } from "./derived";
+import type { PolyominoEntry, Properties, PropertyKey } from "./model";
+import { Polyomino, type SymmetryGroup } from "./polyomino";
 
 function withInferred(properties: Properties): Properties {
   return { ...properties, ...inferProperties(properties) };
 }
-import type { PolyominoEntry, Properties, PropertyKey } from "./model";
-import { Polyomino, type SymmetryGroup } from "./polyomino";
 
-/** Every n-omino up to this size gets a page, data or not. */
-export const MAX_GENERATED_SIZE = 10;
+/**
+ * Every polyomino up to this size was classified; the catalogue lists the ones that tile a
+ * rectangle or are open. Must match "complete" in data/sizes.json.
+ */
+export const COMPLETE_SIZE = 13;
+
+/** The rectangles with up to `maxSize` cells, as polyominoes; they need no entry. */
+export function rectanglePieces(maxSize: number): Polyomino[] {
+  const pieces: Polyomino[] = [];
+  for (let size = 1; size <= maxSize; size++)
+    for (let width = 1; width * width <= size; width++)
+      if (size % width === 0) {
+        const height = size / width;
+        const cells = [];
+        for (let y = 0; y < height; y++)
+          for (let x = 0; x < width; x++) cells.push({ x, y });
+        pieces.push(Polyomino.fromCells(cells));
+      }
+  return pieces;
+}
 
 export interface TilingRef {
   readonly polyominoId: string;
@@ -40,11 +58,11 @@ export class Catalog {
   constructor(
     entries: ReadonlyMap<string, PolyominoEntry>,
     tilings: readonly TilingRef[],
-    maxGeneratedSize = MAX_GENERATED_SIZE,
+    completeSize = COMPLETE_SIZE,
   ) {
     const shapes = new Map<string, Polyomino>();
-    for (const group of enumerateFreePolyominoes(maxGeneratedSize))
-      for (const shape of group) shapes.set(shape.id, shape);
+    for (const shape of rectanglePieces(completeSize))
+      shapes.set(shape.id, shape);
     for (const id of entries.keys())
       if (!shapes.has(id)) shapes.set(id, Polyomino.fromId(id));
 
