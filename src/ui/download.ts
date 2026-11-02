@@ -82,24 +82,21 @@ export function polyominoDownloadButton(
   item: CatalogItem,
   context: SiteContext,
 ): HTMLButtonElement {
-  return exportButton(
-    "Download all data for this polyomino (JSON)",
-    async () => {
-      const refs = new Set<string>(item.entry?.seeAlso ?? []);
-      for (const record of Object.values(item.properties))
-        if (record?.ref !== undefined) refs.add(record.ref);
-      const tilings = await tilingsOf(item);
-      for (const tiling of tilings) if (tiling.ref) refs.add(tiling.ref);
-      saveJson(`${item.id}.json`, {
-        formatVersion: DATA_FORMAT_VERSION,
-        ...summarize(item),
-        tilings,
-        references: Object.fromEntries(
-          [...refs].map((key) => [key, context.references.get(key)]),
-        ),
-      });
-    },
-  );
+  return exportButton("Download everything (JSON)", async () => {
+    const refs = new Set<string>(item.entry?.seeAlso ?? []);
+    for (const record of Object.values(item.properties))
+      if (record?.ref !== undefined) refs.add(record.ref);
+    const tilings = await tilingsOf(item);
+    for (const tiling of tilings) if (tiling.ref) refs.add(tiling.ref);
+    saveJson(`${item.id}.json`, {
+      formatVersion: DATA_FORMAT_VERSION,
+      ...summarize(item),
+      tilings,
+      references: Object.fromEntries(
+        [...refs].map((key) => [key, context.references.get(key)]),
+      ),
+    });
+  });
 }
 
 /** Download of the whole catalogue: every polyomino, every tiling, every reference. */

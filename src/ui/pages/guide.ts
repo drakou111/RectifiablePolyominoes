@@ -5,19 +5,61 @@ import { referenceHref } from "../format";
 export interface GuideTopic {
   readonly slug: string;
   readonly title: string;
+  /** One line for the guide's index. */
+  readonly summary: string;
 }
 
 /** Display order of the guide. Each slug has a file src/guide/<slug>.html. */
 export const GUIDE_TOPICS: readonly GuideTopic[] = [
-  { slug: "notation", title: "Notation and IDs" },
-  { slug: "order", title: "Order, odd order and smallest rectangles" },
-  { slug: "impossibility", title: "Proving that no rectangle exists" },
-  { slug: "prime-rectangles", title: "Prime rectangles" },
-  { slug: "plane", title: "Tiling the plane" },
-  { slug: "colors", title: "Fewest colors" },
-  { slug: "computations", title: "Computed results" },
-  { slug: "history", title: "History" },
-  { slug: "data-format", title: "Data format and contributing" },
+  {
+    slug: "notation",
+    title: "Notation and IDs",
+    summary: "How shapes are named, and how tilings are stored.",
+  },
+  {
+    slug: "order",
+    title: "Order, odd order and smallest rectangles",
+    summary:
+      "The fewest copies that tile a rectangle, with and without an odd count.",
+  },
+  {
+    slug: "impossibility",
+    title: "Proving that no rectangle exists",
+    summary:
+      "Coloring, corner and wall arguments that rule out every rectangle.",
+  },
+  {
+    slug: "prime-rectangles",
+    title: "Prime rectangles",
+    summary: "The rectangles every tileable rectangle is glued from.",
+  },
+  {
+    slug: "plane",
+    title: "Tiling the plane",
+    summary: "Periodic tilings, and squares that no copies can cover.",
+  },
+  {
+    slug: "colors",
+    title: "Fewest colors",
+    summary:
+      "How many colors a rectangle tiling needs so that neighbours differ.",
+  },
+  {
+    slug: "computations",
+    title: "Computed results",
+    summary:
+      "What this site's search tools compute, and how the results are checked.",
+  },
+  {
+    slug: "history",
+    title: "History",
+    summary: "A timeline of the sources cited here, from 1965 on.",
+  },
+  {
+    slug: "data-format",
+    title: "Data format and contributing",
+    summary: "The JSON files behind the site, and how to add to them.",
+  },
 ];
 
 const pages: Record<string, string> = import.meta.glob("../../guide/*.html", {
@@ -67,7 +109,20 @@ export function guidePage(
       h("li", {}, link(`#/guide/${topic.slug}`, topic.title)),
     ),
   );
-  if (slug === undefined) return h("section", {}, h("h1", {}, "Guide"), nav);
+  if (slug === undefined)
+    return h(
+      "section",
+      {},
+      h("h1", {}, "Guide"),
+      h(
+        "dl",
+        { class: "guide-index" },
+        ...GUIDE_TOPICS.flatMap((topic) => [
+          h("dt", {}, link(`#/guide/${topic.slug}`, topic.title)),
+          h("dd", {}, topic.summary),
+        ]),
+      ),
+    );
 
   const topic = GUIDE_TOPICS.find((candidate) => candidate.slug === slug);
   const html = topicHtml(slug);

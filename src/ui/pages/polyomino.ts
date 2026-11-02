@@ -98,7 +98,7 @@ function propertiesTable(
               title:
                 "The citation is the data source; the first publication is not yet traced",
             },
-            "first publication not traced",
+            "untraced",
           ),
         record?.reason && h("div", {}, record.reason),
         record?.note && h("div", { class: "muted" }, record.note),
@@ -491,16 +491,16 @@ export function polyominoPage(context: SiteContext, id: string): HTMLElement {
         ),
         h("dt", {}, "Holes"),
         h("dd", {}, item.hasHole ? "yes" : "no"),
-        h("dt", {}, "Data file"),
+        h("dt", {}, "Data"),
         h(
           "dd",
           {},
           item.entry === undefined
-            ? h("span", { class: "muted" }, `none yet (would be ${dataPath})`)
-            : link(dataPath, h("code", {}, dataPath)),
+            ? h("span", { class: "muted" }, "derived only, no file")
+            : link(dataPath, h("code", {}, `${item.id}.json`)),
+          " ",
+          polyominoDownloadButton(item, context),
         ),
-        h("dt", {}, "Download"),
-        h("dd", {}, polyominoDownloadButton(item, context)),
       ),
     ),
     item.entry?.note && h("p", {}, item.entry.note),

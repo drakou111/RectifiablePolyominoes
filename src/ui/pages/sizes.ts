@@ -185,7 +185,7 @@ export function sizePage(context: SiteContext, argument: string): HTMLElement {
       `${summary.tilers.length} tile a rectangle, `,
       summary.nonTilers > 0
         ? link(
-            `#/browse?size=${size}&data=any&rectifiable=no`,
+            `#/browse?size=${size}&rectifiable=no`,
             `${summary.nonTilers} tile none`,
           )
         : "none are known to tile no rectangle",

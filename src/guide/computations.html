@@ -1,9 +1,10 @@
 <p>
-  Results with status <em>computed</em> and the source "this catalogue's solver"
-  come from exhaustive searches run by <code>tools/solve.ts</code> in the site's
-  repository. A search that runs out of its step budget proves nothing and is
-  not recorded. Every search is exhaustive in the sense stated below, so the
-  results are proofs by computer, as reliable as the code.
+  Results with status <em>computed</em> and the source "this catalogue's search
+  tools" come from programs in the <code>tools/</code> folder of the site's
+  repository. A search that runs out of its budget proves nothing and is not
+  recorded. Every search is exhaustive in the sense stated below, so the results
+  are proofs by computer, as reliable as the code. Every stored tiling is
+  checked cell by cell when the site is built, whatever produced it.
 </p>
 
 <h2>Order and smallest rectangles</h2>
@@ -78,9 +79,45 @@
   tiling of the plane. The search tries every lattice whose fundamental domain
   holds up to a few copies. For the other direction, if no arrangement of copies
   covers a square, even with copies sticking out on every side, the piece does
-  not tile the plane, since every plane tiling covers every square. On
-  heptominoes and octominoes these two tests agree with the known numbers of
-  pieces that tile the plane.
+  not tile the plane, since every plane tiling covers every square. Pieces these
+  searches left open were finished with a SAT solver
+  (<code>tools/plane-sat.ts</code>), which handles more copies per period and
+  larger squares. Every polyomino with up to 10 cells is now decided, and the
+  numbers that do not tile the plane agree with OEIS A054361 for every size from
+  7 to 10.
+</p>
+
+<h2>Finding tilings to show</h2>
+<p>
+  Many results are known without a picture: Reid's lists, for instance, give
+  prime rectangles but not their tilings. Two searches fill these in. A column
+  sweep in C++ (<code>tools/cpp/rect_tiler.cpp</code>) fills the first empty
+  cell column by column and remembers every partial filling that led nowhere,
+  keyed by its exact frontier, so it never repeats a dead end; it is strongest
+  on long, narrow rectangles. Wider rectangles go to a SAT solver (CaDiCaL),
+  which receives the exact-cover problem with one variable per placement. Both
+  also prove that a rectangle cannot be tiled when their search runs to the end;
+  the two were cross-checked against each other and against the older search on
+  over a thousand rectangles.
+</p>
+
+<h2>Bounds on the odd order and the smallest square</h2>
+<p>
+  Where the odd order or the smallest square is open, the bound hunt
+  (<code>tools/hunt.ts</code>) works upward from the lower bound: every
+  rectangle with that many copies (or that square) is searched. If all are ruled
+  out, the lower bound moves up; the first tiling found sets the upper bound and
+  is stored. When the two meet, the value is settled.
+</p>
+
+<h2>Excluding whole sides</h2>
+<p>
+  For a piece whose rectifiability is open, <code>tools/side-bounds.ts</code>
+  takes one side length at a time. A single long sweep from the left wall that
+  dies out without ever reaching the far wall proves that no rectangle of that
+  height exists, however long, and no half-strip of that width either: the
+  search never saw the far wall, so it runs the same for every longer rectangle.
+  The shorter lengths are then searched one by one.
 </p>
 
 <h2>Width-2 pieces</h2>
@@ -92,9 +129,12 @@
 
 <h2>Still undecided</h2>
 <p>
-  Up to 10 cells, two pieces resist every method above:
+  Up to 10 cells, three pieces remain open. One is <a data-poly="fe70"></a>,
+  studied on its own (see its page). The other two resist every method above:
   <a data-poly="f0e0c040"></a> and <a data-poly="f8e060"></a>. Neither tiles a
-  rectangle holding 24 or fewer copies.
+  rectangle or a half-strip with a side of at most 80 and 68 respectively, so a
+  rectangle would need at least 657 and 477 copies. The open problems page lists
+  these and every other open question.
 </p>
 
 <h2>Checks</h2>

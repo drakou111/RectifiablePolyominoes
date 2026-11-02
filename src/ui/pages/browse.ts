@@ -38,20 +38,6 @@ export function sizeName(size: number): string {
   return SIZE_NAMES[size - 1] ?? `${size}-ominoes`;
 }
 
-/** Links to each size's page (pieces sorted by order); `current` is shown unlinked. */
-export function sizeLinks(maxSize: number, current?: number): HTMLElement {
-  const parts: Child[] = [];
-  for (let size = 1; size <= maxSize; size++) {
-    if (size > 1) parts.push(", ");
-    parts.push(
-      size === current
-        ? h("strong", {}, sizeName(size))
-        : link(`#/size/${size}`, sizeName(size)),
-    );
-  }
-  return h("span", { class: "size-links" }, ...parts);
-}
-
 /** Property columns; `label` is the heading, `title` the full name shown on hover. */
 const PROPERTY_COLUMNS: readonly {
   readonly key: PropertyKey;
@@ -84,7 +70,6 @@ const OTHER_SORT_COLUMNS = new Set<string>([
 interface BrowseFilters {
   query: string;
   size: string;
-  data: "entered" | "any";
   symmetry: string;
   holes: "any" | "no" | "yes";
   tilings: "any" | "some" | "none";
@@ -98,7 +83,6 @@ interface BrowseFilters {
 const defaultFilters = (): BrowseFilters => ({
   query: "",
   size: "",
-  data: "entered",
   symmetry: "",
   holes: "any",
   tilings: "any",
@@ -116,7 +100,6 @@ function readFilters(params: URLSearchParams): BrowseFilters {
   filters.query = params.get("query") ?? "";
   filters.size = params.get("size") ?? "";
   filters.symmetry = params.get("symmetry") ?? "";
-  if (params.get("data") === "any") filters.data = "any";
   const holes = params.get("holes");
   if (holes === "no" || holes === "yes") filters.holes = holes;
   const tilings = params.get("tilings");
@@ -138,7 +121,6 @@ function writeFilters(filters: BrowseFilters): string {
   const params = new URLSearchParams();
   if (filters.query !== "") params.set("query", filters.query);
   if (filters.size !== "") params.set("size", filters.size);
-  if (filters.data !== "entered") params.set("data", filters.data);
   if (filters.symmetry !== "") params.set("symmetry", filters.symmetry);
   if (filters.holes !== "any") params.set("holes", filters.holes);
   if (filters.tilings !== "any") params.set("tilings", filters.tilings);
@@ -151,7 +133,7 @@ function writeFilters(filters: BrowseFilters): string {
   return text === "" ? "#/browse" : `#/browse?${text}`;
 }
 
-/** True when any filter narrows the rows (the entered-data checkbox has its own control). */
+/** True when any filter narrows the rows. */
 function isFiltered(filters: BrowseFilters): boolean {
   return (
     filters.query !== "" ||
@@ -164,7 +146,6 @@ function isFiltered(filters: BrowseFilters): boolean {
 }
 
 function matches(item: CatalogItem, filters: BrowseFilters): boolean {
-  if (filters.data === "entered" && item.entry === undefined) return false;
   if (filters.size !== "" && item.size !== Number(filters.size)) return false;
   if (filters.symmetry !== "" && item.symmetry !== filters.symmetry)
     return false;
@@ -427,7 +408,7 @@ export function browsePage(
     {
       type: "button",
       onclick: () => {
-        const fresh = { ...defaultFilters(), data: filters.data };
+        const fresh = defaultFilters();
         location.hash = writeFilters(fresh);
       },
     },
@@ -484,21 +465,6 @@ export function browsePage(
     "form",
     { class: "filters", onsubmit: (event) => event.preventDefault() },
     h("label", {}, "Search ", search),
-    h(
-      "label",
-      {},
-      h("input", {
-        type: "checkbox",
-        checked: filters.data === "entered",
-        onchange: (event) =>
-          update({
-            data: (event.target as HTMLInputElement).checked
-              ? "entered"
-              : "any",
-          }),
-      }),
-      " Only polyominoes with entered data",
-    ),
     clearButton,
     summary,
   );
@@ -511,22 +477,11 @@ export function browsePage(
     h(
       "p",
       {},
-      `Every free polyomino with up to ${MAX_GENERATED_SIZE} cells has a page, as does every larger one with entered data. `,
-      "Facts that follow from the shape alone (holes, rectangles) are filled in automatically. ",
-      "Click a column heading to sort by it, again to reverse; the menus under the headings filter the rows. ",
-      allDataDownloadButton(context),
-    ),
-    h(
-      "p",
-      {},
-      "By size, sorted by order: ",
-      sizeLinks(
-        MAX_GENERATED_SIZE,
-        filters.size === "" ? undefined : Number(filters.size),
-      ),
-      ".",
+      `Every free polyomino with up to ${MAX_GENERATED_SIZE} cells, and selected larger ones. `,
+      "Click a heading to sort by it (again to reverse); the menus under the headings filter the rows.",
     ),
     controls,
     results,
+    h("p", {}, allDataDownloadButton(context)),
   );
 }

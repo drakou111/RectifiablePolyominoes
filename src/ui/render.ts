@@ -37,6 +37,9 @@ const ORIENTATION_PALETTE = [
   "#ff9da7",
 ];
 const GRADIENT_HUE_SPAN = 270;
+/** Thumbnails share one scale so sizes compare at a glance; wide pieces are capped. */
+const THUMBNAIL_CELL_PIXELS = 10;
+const MAX_THUMBNAIL_PIXELS = 80;
 const OUTLINE_FILL = "var(--surface)";
 /** Above this many cells, interior cell lines are left out to keep the SVG light. */
 const MAX_CELLS_WITH_GRID = 4000;
@@ -68,6 +71,8 @@ export function renderPolyomino(
   className = "shape",
 ): SVGSVGElement {
   const root = baseSvg(polyomino.width, polyomino.height, className);
+  if (className.split(" ").includes("thumbnail"))
+    root.style.width = `${Math.min(MAX_THUMBNAIL_PIXELS, polyomino.width * THUMBNAIL_CELL_PIXELS)}px`;
   let fill = "";
   let grid = "";
   let border = "";

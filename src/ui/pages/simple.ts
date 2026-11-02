@@ -9,7 +9,6 @@ import { h, link } from "../dom";
 import { citationLink, fullCitation, summarizeProperty } from "../format";
 import { renderPolyomino } from "../render";
 import { allDataDownloadButton } from "../download";
-import { sizeLinks } from "./browse";
 import { GUIDE_TOPICS } from "./guide";
 
 const MAX_LISTED_CITATIONS = 30;
@@ -25,7 +24,9 @@ function itemsWithOpenProperties(context: SiteContext): CatalogItem[] {
 
 export function homePage(context: SiteContext): HTMLElement {
   const { items } = context.catalog;
-  const entered = items.filter((item) => item.entry !== undefined).length;
+  const complete = items.filter(
+    (item) => item.size <= MAX_GENERATED_SIZE,
+  ).length;
   const open = itemsWithOpenProperties(context).length;
   const rectangleOpen = items.filter(
     (item) => item.properties.rectifiable?.status === "open",
@@ -51,15 +52,13 @@ export function homePage(context: SiteContext): HTMLElement {
         "li",
         {},
         link("#/browse", "Catalogue"),
-        `: ${items.length} polyominoes (all up to ${MAX_GENERATED_SIZE} cells), ${entered} with entered data, ${tilings} recorded tilings.`,
+        `: all ${complete} polyominoes with up to ${MAX_GENERATED_SIZE} cells, ${items.length - complete} selected larger ones, and ${tilings} recorded tilings.`,
       ),
       h(
         "li",
         {},
-        link("#/sizes", "By size"),
-        ", each sorted by order: ",
-        sizeLinks(MAX_GENERATED_SIZE),
-        ".",
+        link("#/sizes", "Sizes"),
+        `: a page for each size, listing the pieces by order (complete up to ${MAX_GENERATED_SIZE} cells).`,
       ),
       h(
         "li",
@@ -84,13 +83,13 @@ export function homePage(context: SiteContext): HTMLElement {
     h(
       "p",
       {},
-      "Everything on this site is plain JSON. The button below exports every polyomino (with shape, derived and entered properties), every tiling and every reference as one file. The raw files are also served individually under ",
+      "Everything here is plain JSON, served under ",
       h("code", {}, "data/"),
-      ", e.g. ",
+      " (for example ",
       link("data/references.json", h("code", {}, "data/references.json")),
-      ".",
+      "), or as one file: ",
+      allDataDownloadButton(context),
     ),
-    allDataDownloadButton(context),
   );
 }
 

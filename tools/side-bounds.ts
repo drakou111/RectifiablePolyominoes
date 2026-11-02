@@ -81,16 +81,16 @@ log(
   `# ${new Date().toISOString()} ${JSON.stringify({ ids, maxSide, budget, workers })}`,
 );
 
+/** The rectifiable note this tool writes; the two numbers are how a later run resumes. */
+function sideBoundNote(bound: number): string {
+  return `Not resolved by this site's searches. Exact column searches rule out every rectangle with a side of at most ${bound}, and every half-strip of width at most ${bound}.`;
+}
+
 function saveBound(piece: PieceState): void {
   const { shape, bound } = piece;
   const properties = store.entry(shape).properties;
   const rectifiable = properties.rectifiable as PropertyRecord<boolean>;
-  const note = (rectifiable.note ?? "")
-    .replace(SIDE_NOTE, `a side of at most ${bound}`)
-    .replace(
-      /( and every half-strip of width at most \d+)?(, and exhaustive)/,
-      ` and every half-strip of width at most ${bound}$2`,
-    );
+  const note = sideBoundNote(bound);
   store.replaceOpen(shape, "rectifiable", { ...rectifiable, note });
   const order = properties.order as PropertyRecord<number> | undefined;
   const fromSides = Math.ceil(((bound + 1) * (bound + 1)) / shape.size);

@@ -271,7 +271,6 @@ svg.tiling {
 }
 
 svg.thumbnail {
-  width: 80px;
   max-height: 60px;
 }
 
@@ -464,4 +463,14 @@ summary {
 
 .open-nav {
   line-height: 1.8;
+}
+
+.guide-index dt {
+  margin-top: 0.7rem;
+  font-weight: 600;
+}
+
+.guide-index dd {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
 }
