@@ -181,10 +181,46 @@ td.unknown {
 
 .filters {
   display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.filter-row {
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.8rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem 0.9rem;
+}
+
+th.sortable button {
+  all: unset;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+th.sortable button:hover,
+th.sortable button:focus-visible {
+  text-decoration: underline;
+}
+
+/* Sort direction marker, drawn as a small triangle. */
+th[aria-sort="ascending"] button::after,
+th[aria-sort="descending"] button::after {
+  content: "";
+  display: inline-block;
+  margin-left: 0.35em;
+  border-left: 0.3em solid transparent;
+  border-right: 0.3em solid transparent;
+  vertical-align: middle;
+}
+
+th[aria-sort="ascending"] button::after {
+  border-bottom: 0.4em solid currentColor;
+}
+
+th[aria-sort="descending"] button::after {
+  border-top: 0.4em solid currentColor;
 }
 
 input,

@@ -1,4 +1,12 @@
 import { MAX_GENERATED_SIZE, type CatalogItem } from "../../core/catalog";
+import {
+  PROPERTY_FILTER_OPTIONS,
+  YES_NO_KEYS,
+  sortItems,
+  standing,
+  type SortColumn,
+  type Standing,
+} from "../../core/browse-query";
 import { isNotApplicable, type PropertyKey } from "../../core/model";
 import {
   SYMMETRY_DESCRIPTIONS,
@@ -12,28 +20,6 @@ import { renderPolyomino } from "../render";
 
 const PAGE_SIZE = 100;
 
-interface BrowseFilters {
-  query: string;
-  size: string;
-  rectifiable: "any" | "yes" | "no" | "open" | "unknown";
-  data: "entered" | "any";
-  symmetry: string;
-  holes: "any" | "no" | "yes";
-  sort: "size" | "order" | "colors";
-  page: number;
-}
-
-const DEFAULT_FILTERS: BrowseFilters = {
-  query: "",
-  size: "",
-  rectifiable: "any",
-  data: "entered",
-  symmetry: "",
-  holes: "any",
-  sort: "size",
-  page: 1,
-};
-
 const TABLE_COLUMNS: readonly {
   readonly key: PropertyKey;
   readonly label: string;
@@ -42,39 +28,80 @@ const TABLE_COLUMNS: readonly {
   { key: "order", label: "Order" },
   { key: "oddOrder", label: "Odd order" },
   { key: "smallestRectangles", label: "Smallest rectangles" },
+  { key: "smallestSquare", label: "Smallest square" },
   { key: "minColors", label: "Fewest colors" },
   { key: "tilesHalfStrip", label: "Tiles a half-strip" },
   { key: "tilesPlane", label: "Tiles the plane" },
 ];
+const COLUMN_KEYS = new Set<string>(TABLE_COLUMNS.map((column) => column.key));
+const OTHER_SORT_COLUMNS = new Set<string>([
+  "size",
+  "id",
+  "symmetry",
+  "tilings",
+]);
+
+interface BrowseFilters {
+  query: string;
+  size: string;
+  data: "entered" | "any";
+  symmetry: string;
+  holes: "any" | "no" | "yes";
+  /** Per property column: the standing a row must have. */
+  standings: Partial<Record<PropertyKey, Standing>>;
+  sort: SortColumn;
+  descending: boolean;
+  page: number;
+}
+
+const defaultFilters = (): BrowseFilters => ({
+  query: "",
+  size: "",
+  data: "entered",
+  symmetry: "",
+  holes: "any",
+  standings: {},
+  sort: "size",
+  descending: false,
+  page: 1,
+});
+
+const optionsFor = (key: PropertyKey) =>
+  PROPERTY_FILTER_OPTIONS[YES_NO_KEYS.has(key) ? "yesNo" : "valued"];
 
 function readFilters(params: URLSearchParams): BrowseFilters {
-  const filters: BrowseFilters = { ...DEFAULT_FILTERS };
-  const read = <K extends keyof BrowseFilters>(
-    key: K,
-    allowed?: readonly string[],
-  ): void => {
+  const filters = defaultFilters();
+  filters.query = params.get("query") ?? "";
+  filters.size = params.get("size") ?? "";
+  filters.symmetry = params.get("symmetry") ?? "";
+  if (params.get("data") === "any") filters.data = "any";
+  const holes = params.get("holes");
+  if (holes === "no" || holes === "yes") filters.holes = holes;
+  for (const { key } of TABLE_COLUMNS) {
     const value = params.get(key);
-    if (value === null || (allowed !== undefined && !allowed.includes(value)))
-      return;
-    (filters as unknown as Record<string, unknown>)[key] =
-      key === "page" ? Math.max(1, Number(value) || 1) : value;
-  };
-  read("query");
-  read("size");
-  read("rectifiable", ["any", "yes", "no", "open", "unknown"]);
-  read("data", ["entered", "any"]);
-  read("symmetry");
-  read("holes", ["any", "no", "yes"]);
-  read("sort", ["size", "order", "colors"]);
-  read("page");
+    if (optionsFor(key).some(([option]) => option === value && value !== "any"))
+      filters.standings[key] = value as Standing;
+  }
+  const sort = params.get("sort") ?? "";
+  if (COLUMN_KEYS.has(sort) || OTHER_SORT_COLUMNS.has(sort))
+    filters.sort = sort as SortColumn;
+  filters.descending = params.get("dir") === "desc";
+  filters.page = Math.max(1, Number(params.get("page")) || 1);
   return filters;
 }
 
 function writeFilters(filters: BrowseFilters): string {
   const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(filters))
-    if (value !== DEFAULT_FILTERS[key as keyof BrowseFilters])
-      params.set(key, String(value));
+  if (filters.query !== "") params.set("query", filters.query);
+  if (filters.size !== "") params.set("size", filters.size);
+  if (filters.data !== "entered") params.set("data", filters.data);
+  if (filters.symmetry !== "") params.set("symmetry", filters.symmetry);
+  if (filters.holes !== "any") params.set("holes", filters.holes);
+  for (const [key, value] of Object.entries(filters.standings))
+    params.set(key, value);
+  if (filters.sort !== "size") params.set("sort", filters.sort);
+  if (filters.descending) params.set("dir", "desc");
+  if (filters.page > 1) params.set("page", String(filters.page));
   const text = params.toString();
   return text === "" ? "#/browse" : `#/browse?${text}`;
 }
@@ -86,19 +113,8 @@ function matches(item: CatalogItem, filters: BrowseFilters): boolean {
     return false;
   if (filters.holes !== "any" && item.hasHole !== (filters.holes === "yes"))
     return false;
-  const rectifiable = item.properties.rectifiable;
-  switch (filters.rectifiable) {
-    case "yes":
-    case "no":
-      if (rectifiable?.value !== (filters.rectifiable === "yes")) return false;
-      break;
-    case "open":
-      if (rectifiable?.status !== "open") return false;
-      break;
-    case "unknown":
-      if (rectifiable !== undefined) return false;
-      break;
-  }
+  for (const [key, wanted] of Object.entries(filters.standings))
+    if (standing(item, key as PropertyKey) !== wanted) return false;
   if (filters.query !== "") {
     const query = filters.query.toLowerCase();
     const haystack = [item.id, ...(item.entry?.names ?? [])]
@@ -109,31 +125,19 @@ function matches(item: CatalogItem, filters: BrowseFilters): boolean {
   return true;
 }
 
-function sortKey(item: CatalogItem, sort: BrowseFilters["sort"]): number {
-  const unknownLast = Number.MAX_SAFE_INTEGER;
-  if (sort === "order")
-    return (
-      item.properties.order?.value ??
-      item.properties.order?.lower ??
-      unknownLast
-    );
-  if (sort === "colors") return item.properties.minColors?.value ?? unknownLast;
-  return item.size;
-}
-
 function select(
   name: string,
   current: string,
   options: readonly (readonly [string, string])[],
   onChange: (value: string) => void,
-): HTMLLabelElement {
+): HTMLSelectElement {
   const element = h("select", {
     name,
     onchange: (event) => onChange((event.target as HTMLSelectElement).value),
   });
   for (const [value, label] of options)
     element.append(h("option", { value, selected: value === current }, label));
-  return h("label", {}, element);
+  return element;
 }
 
 function propertyCell(
@@ -163,16 +167,49 @@ function propertyCell(
   );
 }
 
-function resultsTable(items: readonly CatalogItem[]): HTMLTableElement {
+function resultsTable(
+  items: readonly CatalogItem[],
+  filters: BrowseFilters,
+  onSort: (column: SortColumn) => void,
+): HTMLTableElement {
+  const header = (
+    column: SortColumn,
+    label: string,
+    numeric = false,
+  ): HTMLTableCellElement => {
+    const active = filters.sort === column;
+    return h(
+      "th",
+      {
+        class: numeric ? "numeric sortable" : "sortable",
+        "aria-sort": active
+          ? filters.descending
+            ? "descending"
+            : "ascending"
+          : "none",
+      },
+      h(
+        "button",
+        {
+          type: "button",
+          title: active
+            ? "Click to reverse the order"
+            : `Sort by ${label.toLowerCase()}`,
+          onclick: () => onSort(column),
+        },
+        label,
+      ),
+    );
+  };
   const head = h(
     "tr",
     {},
     h("th", {}, "Shape"),
-    h("th", {}, "ID"),
-    h("th", { class: "numeric" }, "Cells"),
-    ...TABLE_COLUMNS.map((column) => h("th", {}, column.label)),
-    h("th", {}, "Symmetry"),
-    h("th", { class: "numeric" }, "Tilings"),
+    header("id", "ID"),
+    header("size", "Cells", true),
+    ...TABLE_COLUMNS.map((column) => header(column.key, column.label)),
+    header("symmetry", "Symmetry"),
+    header("tilings", "Tilings", true),
   );
   const rows = items.map((item) =>
     h(
@@ -220,15 +257,19 @@ export function browsePage(
     history.replaceState(null, "", writeFilters(filters));
     drawResults();
   };
+  const onSort = (column: SortColumn): void =>
+    update(
+      filters.sort === column
+        ? { descending: !filters.descending }
+        : { sort: column, descending: false },
+    );
 
   const drawResults = (): void => {
-    const matching = context.catalog.items.filter((item) =>
-      matches(item, filters),
+    const matching = sortItems(
+      context.catalog.items.filter((item) => matches(item, filters)),
+      filters.sort,
+      filters.descending,
     );
-    if (filters.sort !== "size")
-      matching.sort(
-        (a, b) => sortKey(a, filters.sort) - sortKey(b, filters.sort),
-      );
     const pageCount = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
     const page = Math.min(filters.page, pageCount);
     const shown = matching.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -255,7 +296,7 @@ export function browsePage(
     results.replaceChildren(
       h("p", { class: "muted" }, `${matching.length} polyominoes match.`),
       shown.length > 0
-        ? resultsTable(shown)
+        ? resultsTable(shown, filters, onSort)
         : h("p", {}, "Nothing matches these filters."),
       pager || "",
     );
@@ -272,74 +313,96 @@ export function browsePage(
     oninput: (event) =>
       update({ query: (event.target as HTMLInputElement).value.trim() }),
   });
+  const labelled = (label: string, control: HTMLElement): HTMLLabelElement =>
+    h("label", {}, `${label} `, control);
 
   const controls = h(
     "form",
     { class: "filters", onsubmit: (event) => event.preventDefault() },
-    h("label", {}, "Search ", search),
-    "Cells ",
-    select(
-      "size",
-      filters.size,
-      [["", "any"], ...sizes.map((s) => [s, s] as const)],
-      (size) => update({ size }),
-    ),
-    "Tiles a rectangle ",
-    select(
-      "rectifiable",
-      filters.rectifiable,
-      [
-        ["any", "any"],
-        ["yes", "yes"],
-        ["no", "no"],
-        ["open", "open problem"],
-        ["unknown", "no data"],
-      ],
-      (value) => update({ rectifiable: value as BrowseFilters["rectifiable"] }),
-    ),
-    "Symmetry ",
-    select(
-      "symmetry",
-      filters.symmetry,
-      [["", "any"], ...symmetries.map((s) => [s, s] as const)],
-      (symmetry) => update({ symmetry }),
-    ),
-    "Holes ",
-    select(
-      "holes",
-      filters.holes,
-      [
-        ["any", "any"],
-        ["no", "no holes"],
-        ["yes", "has holes"],
-      ],
-      (value) => update({ holes: value as BrowseFilters["holes"] }),
-    ),
-    "Sort by ",
-    select(
-      "sort",
-      filters.sort,
-      [
-        ["size", "cells, then ID"],
-        ["order", "order"],
-        ["colors", "fewest colors"],
-      ],
-      (value) => update({ sort: value as BrowseFilters["sort"] }),
+    h(
+      "div",
+      { class: "filter-row" },
+      labelled("Search", search),
+      labelled(
+        "Cells",
+        select(
+          "size",
+          filters.size,
+          [["", "any"], ...sizes.map((s) => [s, s] as const)],
+          (size) => update({ size }),
+        ),
+      ),
+      labelled(
+        "Symmetry",
+        select(
+          "symmetry",
+          filters.symmetry,
+          [["", "any"], ...symmetries.map((s) => [s, s] as const)],
+          (symmetry) => update({ symmetry }),
+        ),
+      ),
+      labelled(
+        "Holes",
+        select(
+          "holes",
+          filters.holes,
+          [
+            ["any", "any"],
+            ["no", "no holes"],
+            ["yes", "has holes"],
+          ],
+          (value) => update({ holes: value as BrowseFilters["holes"] }),
+        ),
+      ),
+      h(
+        "label",
+        {},
+        h("input", {
+          type: "checkbox",
+          checked: filters.data === "entered",
+          onchange: (event) =>
+            update({
+              data: (event.target as HTMLInputElement).checked
+                ? "entered"
+                : "any",
+            }),
+        }),
+        " Only polyominoes with entered data",
+      ),
     ),
     h(
-      "label",
-      {},
-      h("input", {
-        type: "checkbox",
-        checked: filters.data === "entered",
-        onchange: (event) =>
-          update({
-            data: (event.target as HTMLInputElement).checked
-              ? "entered"
-              : "any",
-          }),
-      }),
-      " Only polyominoes with entered data",
+      "div",
+      { class: "filter-row" },
+      ...TABLE_COLUMNS.map((column) =>
+        labelled(
+          column.label,
+          select(
+            column.key,
+            filters.standings[column.key] ?? "any",
+            optionsFor(column.key),
+            (value) => {
+              const standings = Object.fromEntries(
+                Object.entries(filters.standings).filter(
+                  ([key]) => key !== column.key,
+                ),
+              ) as BrowseFilters["standings"];
+              if (value !== "any") standings[column.key] = value as Standing;
+              update({ standings });
+            },
+          ),
+        ),
+      ),
+      h(
+        "button",
+        {
+          type: "button",
+          onclick: () => {
+            const fresh = defaultFilters();
+            location.hash = writeFilters(fresh);
+          },
+        },
+        "Clear filters",
+      ),
     ),
   );
 
@@ -351,8 +414,9 @@ export function browsePage(
     h(
       "p",
       {},
-      `Every free polyomino with up to ${MAX_GENERATED_SIZE} cells has a page, as does every larger one with entered data. Untick the last filter to include those without entered data. `,
-      "Facts that follow from the shape alone (holes, rectangles) are filled in automatically.",
+      `Every free polyomino with up to ${MAX_GENERATED_SIZE} cells has a page, as does every larger one with entered data. Untick "Only polyominoes with entered data" to include those without. `,
+      "Facts that follow from the shape alone (holes, rectangles) are filled in automatically. ",
+      "Click a column heading to sort by it; click again to reverse.",
     ),
     controls,
     h("p", {}, allDataDownloadButton(context)),
