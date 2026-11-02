@@ -66,6 +66,9 @@ nav {
 nav .site-name {
   font-weight: 700;
   margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 main {
@@ -473,4 +476,9 @@ summary {
 .guide-index dd {
   margin: 0.15rem 0 0;
   color: var(--muted);
+}
+
+nav .logo {
+  width: 1.4em;
+  height: 1.4em;
 }
