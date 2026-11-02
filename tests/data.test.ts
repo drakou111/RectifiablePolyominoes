@@ -39,9 +39,9 @@ it("data/ is valid", () => {
 
 // OEIS A000105 (free polyominoes) and A001419 (free polyominoes with holes).
 const FREE_POLYOMINOES = [
-  1, 1, 2, 5, 12, 35, 108, 369, 1285, 4655, 17073, 63600, 238591,
+  1, 1, 2, 5, 12, 35, 108, 369, 1285, 4655, 17073, 63600, 238591, 901971,
 ];
-const WITH_HOLES = [0, 0, 0, 0, 0, 0, 1, 6, 37, 195, 979, 4663, 21474];
+const WITH_HOLES = [0, 0, 0, 0, 0, 0, 1, 6, 37, 195, 979, 4663, 21474, 96496];
 
 const sizeFile = Object.values(
   import.meta.glob<SizeTotals>("/data/sizes.json", {
