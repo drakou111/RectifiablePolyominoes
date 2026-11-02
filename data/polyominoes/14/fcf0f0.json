@@ -19,7 +19,7 @@
     },
     "oddOrder": {
       "status": "open",
-      "lower": 399,
+      "lower": 409,
       "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
     },
     "smallestRectangles": {
@@ -31,7 +31,7 @@
     },
     "smallestSquare": {
       "status": "open",
-      "lower": 75,
+      "lower": 84,
       "note": "Every smaller square was ruled out by exhaustive search."
     },
     "primeRectangles": {
