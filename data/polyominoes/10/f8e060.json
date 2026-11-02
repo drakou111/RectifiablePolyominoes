@@ -12,6 +12,11 @@
       "ref": "site-solver",
       "note": "Every tileable rectangle has both sides above 68, so it holds at least 477 copies; the piece may not tile any rectangle."
     },
+    "tilesHalfStrip": {
+      "status": "open",
+      "ref": "site-solver",
+      "note": "No half-strip of width at most 68 can be tiled (exact column search, tools/side-bounds.ts); wider half-strips are undecided."
+    },
     "tilesPlane": {
       "status": "computed",
       "ref": "site-solver",
