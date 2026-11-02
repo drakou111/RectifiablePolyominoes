@@ -14,7 +14,11 @@
 //                   [--budget NODES] [--cache-mb M] [--seed S] [--pocket-limit P]
 // Each orientation is a normalized cell list; output placements use their index in this list.
 // Output (one JSON line): {"result":"found","nodes":N,"placements":[[o,x,y],...]}
-//                     or  {"result":"budget"|"exhausted","nodes":N}
+//                     or  {"result":"budget","nodes":N}
+//                     or  {"result":"exhausted","nodes":N,"wallRejects":K,"farthestColumn":C}
+// With no wall rejects the far wall never mattered: every anchor stayed at or before column C, so
+// placements reach at most C + reach - 1 and pocket checks look at most one copy size further.
+// For any width above C + reach + (copy size) the search tree is the same, so none of them tiles.
 
 #include <algorithm>
 #include <array>
@@ -316,6 +320,8 @@ int run(const Options& options) {
     stack.push_back({0, {}, 0, -1});
     FailedStates<WORDS> failed(FailedStates<WORDS>::bitsFor(options.cacheMegabytes));
     long long nodes = 0;
+    long long wallRejects = 0;  // moves refused only because they cross the far wall
+    long long farthestColumn = 0;  // last column any placed copy reached
     bool found = false;
 
     while (!stack.empty()) {
@@ -326,7 +332,10 @@ int run(const Options& options) {
         bool pushed = false;
         while (frame.nextChoice < static_cast<int>(choices.size())) {
             const auto& a = anchored[choices[frame.nextChoice++]];
-            if (column + a.maxDx >= options.width) continue;
+            if (column + a.maxDx >= options.width) {
+                wallRejects++;
+                continue;
+            }
             if (frame.window.overlaps(a.mask)) continue;
             Window<WORDS> next = frame.window;
             next.add(a.mask);
@@ -346,6 +355,7 @@ int run(const Options& options) {
                 return 0;
             }
             frame.placed = static_cast<int>(&a - anchored.data());
+            farthestColumn = std::max(farthestColumn, column + a.maxDx);
             stack.push_back({position, next, 0, -1});
             pushed = true;
             break;
@@ -357,7 +367,8 @@ int run(const Options& options) {
     }
 
     if (!found) {
-        std::printf("{\"result\":\"exhausted\",\"nodes\":%lld}\n", nodes);
+        std::printf("{\"result\":\"exhausted\",\"nodes\":%lld,\"wallRejects\":%lld,\"farthestColumn\":%lld}\n",
+                    nodes, wallRejects, farthestColumn);
         return 0;
     }
     std::string out = "{\"result\":\"found\",\"nodes\":" + std::to_string(nodes) + ",\"placements\":[";

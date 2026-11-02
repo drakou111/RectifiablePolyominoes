@@ -34,8 +34,16 @@ export type NativeResult = { readonly nodes: number } & (
       readonly height: number;
       readonly placements: Placement[];
     }
-  /** Searched to the end without a tiling; the cache is lossy, so this is not a proof. */
-  | { readonly kind: "exhausted" }
+  /**
+   * Searched to the end: no tiling exists. `wallRejects` counts moves refused only by the far
+   * wall and `farthestColumn` is the last column any copy reached; with no wall rejects the
+   * verdict holds for every longer rectangle too (see tools/cpp/rect_tiler.cpp).
+   */
+  | {
+      readonly kind: "exhausted";
+      readonly wallRejects?: number;
+      readonly farthestColumn?: number;
+    }
   | { readonly kind: "budget" }
 );
 
@@ -126,10 +134,23 @@ export function parseNativeOutput(
   const parsed = JSON.parse(stdout) as {
     result: string;
     nodes: number;
+    wallRejects?: number;
+    farthestColumn?: number;
     placements?: [number, number, number][];
   };
-  if (parsed.result === "budget" || parsed.result === "exhausted")
-    return { kind: parsed.result, nodes: parsed.nodes };
+  if (parsed.result === "budget")
+    return { kind: "budget", nodes: parsed.nodes };
+  if (parsed.result === "exhausted")
+    return {
+      kind: "exhausted",
+      nodes: parsed.nodes,
+      ...(parsed.wallRejects === undefined
+        ? {}
+        : { wallRejects: parsed.wallRejects }),
+      ...(parsed.farthestColumn === undefined
+        ? {}
+        : { farthestColumn: parsed.farthestColumn }),
+    };
   if (parsed.result !== "found" || parsed.placements === undefined)
     throw new Error(`unexpected rect_tiler output: ${stdout.slice(0, 200)}`);
   return {
