@@ -1,0 +1,10 @@
+{
+  "id": "xfff8.6000",
+  "properties": {
+    "rectifiable": {
+      "status": "open",
+      "ref": "site-solver",
+      "note": "Not resolved by this site's first searches (corner test, wall sweep up to band height 8, every rectangle with at most 10 copies)."
+    }
+  }
+}
