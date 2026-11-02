@@ -1,6 +1,17 @@
 {
   "id": "f8e060",
   "properties": {
+    "rectifiable": {
+      "status": "open",
+      "ref": "site-solver",
+      "note": "Not resolved by this site's searches. Exact column sweeps rule out every rectangle with a side of at most 24, and exhaustive search rules out every rectangle holding at most 24 copies."
+    },
+    "order": {
+      "status": "open",
+      "lower": 25,
+      "ref": "site-solver",
+      "note": "Every rectangle holding at most 24 copies was ruled out by exhaustive search; the piece may not tile any rectangle."
+    },
     "tilesPlane": {
       "status": "computed",
       "ref": "site-solver",

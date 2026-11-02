@@ -12,6 +12,12 @@
       "ref": "site-solver",
       "value": false,
       "reason": "No arrangement of copies fills the 6 x 6 corner of any rectangle or half-strip (exhaustive search)."
+    },
+    "tilesPlane": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": false,
+      "reason": "No arrangement of copies covers a 10 x 10 square (exhaustive search), and every plane tiling would."
     }
   }
 }
