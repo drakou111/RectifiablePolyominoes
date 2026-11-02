@@ -56,7 +56,8 @@ export function homePage(context: SiteContext): HTMLElement {
       h(
         "li",
         {},
-        "By size, sorted by order: ",
+        link("#/sizes", "By size"),
+        ", each sorted by order: ",
         sizeLinks(MAX_GENERATED_SIZE),
         ".",
       ),

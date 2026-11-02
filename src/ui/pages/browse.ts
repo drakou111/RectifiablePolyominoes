@@ -33,16 +33,20 @@ const SIZE_NAMES = [
   "Decominoes",
 ];
 
-/** Links to every n-omino of one size, sorted by order; `current` is shown unlinked. */
+/** "Pentominoes", or "11-ominoes" past the named sizes. */
+export function sizeName(size: number): string {
+  return SIZE_NAMES[size - 1] ?? `${size}-ominoes`;
+}
+
+/** Links to each size's page (pieces sorted by order); `current` is shown unlinked. */
 export function sizeLinks(maxSize: number, current?: number): HTMLElement {
   const parts: Child[] = [];
   for (let size = 1; size <= maxSize; size++) {
-    const name = SIZE_NAMES[size - 1] ?? `${size}-ominoes`;
     if (size > 1) parts.push(", ");
     parts.push(
       size === current
-        ? h("strong", {}, name)
-        : link(`#/browse?size=${size}&data=any&sort=order`, name),
+        ? h("strong", {}, sizeName(size))
+        : link(`#/size/${size}`, sizeName(size)),
     );
   }
   return h("span", { class: "size-links" }, ...parts);
@@ -200,7 +204,7 @@ function columnFilter(
   return element;
 }
 
-function propertyCell(
+export function propertyCell(
   item: CatalogItem,
   key: PropertyKey,
 ): HTMLTableCellElement {

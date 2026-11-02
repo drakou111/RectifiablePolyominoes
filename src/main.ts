@@ -6,6 +6,7 @@ import { browsePage } from "./ui/pages/browse";
 import { guidePage } from "./ui/pages/guide";
 import { polyominoPage } from "./ui/pages/polyomino";
 import { homePage, openProblemsPage, referencesPage } from "./ui/pages/simple";
+import { sizePage, sizesPage } from "./ui/pages/sizes";
 
 const SITE_TITLE = "Rectifiable Polyominoes";
 
@@ -33,6 +34,12 @@ function render(): void {
       break;
     case "p":
       page = polyominoPage(context, decodeURIComponent(argument ?? ""));
+      break;
+    case "sizes":
+      page = sizesPage(context);
+      break;
+    case "size":
+      page = sizePage(context, argument ?? "");
       break;
     case "open":
       page = openProblemsPage(context, params);
