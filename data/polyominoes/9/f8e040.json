@@ -17,7 +17,7 @@
     },
     "oddOrder": {
       "status": "open",
-      "lower": 47,
+      "lower": 361,
       "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
     },
     "smallestRectangles": {
@@ -25,7 +25,12 @@
       "ref": "reid-rectifiable-data",
       "refDetail": "9omino31_rect.html",
       "untraced": true,
-      "value": [[6, 6]]
+      "value": [
+        [
+          6,
+          6
+        ]
+      ]
     },
     "smallestSquare": {
       "status": "computed",
@@ -39,7 +44,12 @@
       "refDetail": "9omino31_rect.html",
       "untraced": true,
       "value": {
-        "rectangles": [[6, 6]],
+        "rectangles": [
+          [
+            6,
+            6
+          ]
+        ],
         "complete": false
       },
       "note": "Reid lists these prime rectangles but does not claim the list is complete; larger primes may exist."

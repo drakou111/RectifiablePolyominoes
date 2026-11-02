@@ -1,6 +1,8 @@
 {
   "id": "fefe80",
-  "names": ["15-omino"],
+  "names": [
+    "15-omino"
+  ],
   "properties": {
     "rectifiable": {
       "status": "proven",
@@ -18,7 +20,7 @@
     },
     "oddOrder": {
       "status": "open",
-      "lower": 61,
+      "lower": 209,
       "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
     },
     "smallestRectangles": {
@@ -26,7 +28,12 @@
       "ref": "reid-rectifiable-data",
       "refDetail": "15omino01_rect.html",
       "untraced": true,
-      "value": [[30, 30]]
+      "value": [
+        [
+          30,
+          30
+        ]
+      ]
     },
     "smallestSquare": {
       "status": "computed",
@@ -40,7 +47,12 @@
       "refDetail": "15omino01_rect.html",
       "untraced": true,
       "value": {
-        "rectangles": [[30, 30]],
+        "rectangles": [
+          [
+            30,
+            30
+          ]
+        ],
         "complete": false
       },
       "note": "Reid lists these prime rectangles but does not claim the list is complete; larger primes may exist."

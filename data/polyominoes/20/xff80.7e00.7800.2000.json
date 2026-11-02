@@ -17,7 +17,7 @@
     },
     "oddOrder": {
       "status": "open",
-      "lower": 47,
+      "lower": 189,
       "note": "Every rectangle holding fewer odd copies was ruled out by exhaustive search."
     },
     "smallestSquare": {
