@@ -432,6 +432,12 @@ class Validator {
         where,
         `uses an odd number of copies (${copies}), contradicting the odd order`,
       );
+    const oddLower = properties.oddOrder?.lower;
+    if (copies % 2 === 1 && oddLower !== undefined && copies < oddLower)
+      this.error(
+        where,
+        `uses an odd number of copies (${copies}), below the odd order's lower bound ${oddLower}`,
+      );
     const square = properties.smallestSquare?.value;
     if (
       tiling.width === tiling.height &&
@@ -441,6 +447,16 @@ class Validator {
       this.error(
         where,
         "is a square smaller than the recorded smallest square",
+      );
+    const squareLower = properties.smallestSquare?.lower;
+    if (
+      tiling.width === tiling.height &&
+      squareLower !== undefined &&
+      tiling.width < squareLower
+    )
+      this.error(
+        where,
+        `is a square below the smallest square's lower bound ${squareLower}`,
       );
     const minColors = properties.minColors?.value;
     if (minColors !== undefined) {

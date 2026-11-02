@@ -175,6 +175,46 @@ describe("validateData", () => {
     );
   });
 
+  it("finds tilings below an open lower bound", () => {
+    const square = lEntry({
+      smallestSquare: { status: "open", lower: 8 },
+    });
+    const fourByFour: DataFile = {
+      path: "tilings/e080/4x4.json",
+      content: {
+        width: 4,
+        height: 4,
+        ref: "some-paper",
+        placements: [
+          ...GOOD_PLACEMENTS,
+          ...GOOD_PLACEMENTS.map((p) => ({ ...p, y: 2 })),
+        ],
+      },
+    };
+    expect(errorsOf([square], [fourByFour]).join("\n")).toMatch(
+      /is a square below the smallest square's lower bound 8/,
+    );
+    const straight: DataFile = {
+      path: "polyominoes/3/e0.json",
+      content: {
+        id: "e0",
+        properties: { oddOrder: { status: "open", lower: 3 } },
+      },
+    };
+    const oneCopy: DataFile = {
+      path: "tilings/e0/3x1.json",
+      content: {
+        width: 3,
+        height: 1,
+        ref: "some-paper",
+        placements: [{ o: 0, x: 0, y: 0 }],
+      },
+    };
+    expect(errorsOf([straight], [oneCopy]).join("\n")).toMatch(
+      /uses an odd number of copies \(1\), below the odd order's lower bound 3/,
+    );
+  });
+
   it("checks that the smallest rectangle matches the order", () => {
     const entry = lEntry({
       order: { status: "proven", value: 2, ref: "some-paper" },
