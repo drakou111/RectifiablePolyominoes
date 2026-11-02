@@ -8,7 +8,7 @@
       "status": "open",
       "ref": "dahlke-gun",
       "refDetail": "section 26",
-      "note": "Dahlke reports testing rectangles up to width 85 without finding a tiling or a proof of untilability. The fe70 project has since ruled out, by exact search, every rectangle with a side of at most 127 (and sides 129 and 130); see fe70.org for the live search frontier."
+      "note": "Dahlke reports testing rectangles up to width 85 without finding a tiling or a proof of untilability. The fe70 project has since ruled out, by exact search, every rectangle with a side of at most 174; see fe70.org for the live search frontier."
     },
     "tilesHalfStrip": {
       "status": "computed",
