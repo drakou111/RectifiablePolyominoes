@@ -28,8 +28,8 @@
     },
     "minColors": {
       "status": "open",
-      "upper": 4,
-      "note": "Upper bound from the stored 20x12 tiling."
+      "upper": 3,
+      "note": "Upper bound from a stored 3-colorable tiling."
     }
   }
 }
