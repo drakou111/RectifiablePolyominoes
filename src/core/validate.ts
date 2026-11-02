@@ -247,8 +247,21 @@ class Validator {
         this.error(at, `status must be one of ${STATUSES.join(", ")}`);
       if (record.status !== "open" && record.value === undefined)
         this.error(at, "a settled property needs a value");
-      if (record.status === "open" && record.value !== undefined)
+      const partialPrimes =
+        key === "primeRectangles" &&
+        isObject(record.value) &&
+        record.value.complete === false;
+      if (
+        record.status === "open" &&
+        record.value !== undefined &&
+        !partialPrimes
+      )
         this.error(at, "an open property cannot have a value");
+      if (partialPrimes && record.status !== "open")
+        this.error(
+          at,
+          "an incomplete prime list must be open: the property is not settled",
+        );
       if (record.status !== "open" && record.ref === undefined)
         this.error(
           at,

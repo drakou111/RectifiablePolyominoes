@@ -34,14 +34,15 @@
       "note": "Every smaller square was ruled out by exhaustive search."
     },
     "primeRectangles": {
-      "status": "proven",
+      "status": "open",
       "ref": "reid-rectifiable-data",
       "refDetail": "11omino4_rect.html",
       "untraced": true,
       "value": {
         "rectangles": [[2, 11]],
         "complete": false
-      }
+      },
+      "note": "Reid lists these prime rectangles but does not claim the list is complete; larger primes may exist."
     },
     "minColors": {
       "status": "computed",

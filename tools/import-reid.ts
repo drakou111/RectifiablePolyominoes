@@ -99,6 +99,9 @@ function parsePage(file: string, html: string): ReidPage {
   };
 }
 
+const INCOMPLETE_PRIMES_NOTE =
+  "Reid lists these prime rectangles but does not claim the list is complete; larger primes may exist.";
+
 function importPage(store: DataStore, page: ReidPage): void {
   const { polyomino, primes, complete } = page;
   const n = polyomino.size;
@@ -136,7 +139,10 @@ function importPage(store: DataStore, page: ReidPage): void {
     });
   }
   if (primes.length > 0)
-    set("primeRectangles", { value: { rectangles: primes, complete } });
+    set("primeRectangles", {
+      value: { rectangles: primes, complete },
+      ...(!complete && { status: "open", note: INCOMPLETE_PRIMES_NOTE }),
+    });
 
   if (page.smallestOdd.length > 0) {
     const oddCopies =

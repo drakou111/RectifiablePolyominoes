@@ -34,7 +34,7 @@
       "reason": "Every smaller square whose area is a multiple of the piece size was searched exhaustively."
     },
     "primeRectangles": {
-      "status": "proven",
+      "status": "open",
       "ref": "reid-rectifiable-data",
       "refDetail": "10omino06_rect.html",
       "untraced": true,
@@ -49,7 +49,8 @@
           [70, 206]
         ],
         "complete": false
-      }
+      },
+      "note": "Reid lists these prime rectangles but does not claim the list is complete; larger primes may exist."
     },
     "minColors": {
       "status": "computed",

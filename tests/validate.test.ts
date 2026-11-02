@@ -84,6 +84,25 @@ describe("validateData", () => {
     expect(errors).toMatch(/sparkle\]: unknown property/);
   });
 
+  it("requires an incomplete prime list to be open", () => {
+    const primes = (status: string, complete: boolean): DataFile =>
+      lEntry({
+        primeRectangles: {
+          status,
+          ref: "some-paper",
+          value: { rectangles: [[2, 4]], complete },
+        },
+      });
+    expect(errorsOf([primes("open", false)])).toEqual([]);
+    expect(errorsOf([primes("proven", true)])).toEqual([]);
+    expect(errorsOf([primes("proven", false)]).join("\n")).toMatch(
+      /incomplete prime list must be open/,
+    );
+    expect(errorsOf([primes("open", true)]).join("\n")).toMatch(
+      /an open property cannot have a value/,
+    );
+  });
+
   it("checks seeAlso keys and reference kinds", () => {
     const errors = validateData(
       {
