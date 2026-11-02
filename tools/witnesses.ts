@@ -21,7 +21,8 @@ const USAGE = `Stores a tiling for every property that names a rectangle but has
 Usage: npx tsx tools/witnesses.ts [options]
 
   --kinds <list>     any of square,odd,prime (default all)
-  --max-area <n>     skip rectangles larger than n cells (default no limit)
+  --max-area <n>     skip rectangles larger than n cells (default 5000; exact cover
+                     builds every placement up front, so huge rectangles exhaust memory)
   --budget <steps>   step budget of one rectangle search (default 20000000)
   --workers <n>      worker threads (default: all cores)
   --only <ids>       comma-separated IDs
@@ -31,6 +32,7 @@ Squares and prime rectangles have known sizes; an odd tiling tries every rectang
 odd order's number of copies. Jobs run smallest first and each tiling is written as soon as it is
 found. Existing tiling files are never overwritten. Progress goes to output/witnesses/run.log.`;
 
+const DEFAULT_MAX_AREA = 5000;
 const ALL_KINDS = ["square", "odd", "prime"] as const;
 
 function argument(name: string, fallback: string): string {
@@ -43,7 +45,7 @@ const kinds = new Set(argument("--kinds", ALL_KINDS.join(",")).split(","));
 for (const kind of kinds)
   if (!(ALL_KINDS as readonly string[]).includes(kind))
     throw new Error(`unknown kind "${kind}"; use ${ALL_KINDS.join(", ")}`);
-const maxArea = Number(argument("--max-area", String(Number.MAX_SAFE_INTEGER)));
+const maxArea = Number(argument("--max-area", String(DEFAULT_MAX_AREA)));
 const parameters: WitnessParameters = {
   stepBudget: Number(argument("--budget", "20000000")),
 };
