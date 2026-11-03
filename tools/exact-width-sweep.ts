@@ -2,7 +2,7 @@ import { appendFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Polyomino } from "../src/core/polyomino";
-import { requiredLeftReach, runExactWidth } from "./lib/exact-width";
+import { requiredBuild, runExactWidth } from "./lib/exact-width";
 import { HALF_STRIP_NOTE, recordSideBound } from "./lib/side-bound";
 import { DataStore, PROJECT_ROOT, printHelpIfAsked } from "./lib/store";
 
@@ -17,6 +17,7 @@ Usage: npx tsx tools/exact-width-sweep.ts --only <ids> [options]
   --jobs <n>         widths decided at once (default 5)
   --threads <n>      threads per width (default 4)
   --start-row <n>    rows built width-independently (default 1, see tools/lib/exact-width.ts)
+  --from <n>         decide widths above n again (at most the recorded N, at least the reach - 1)
   --dry-run          report only: no data or log written
 
 Widths go up from N + 1. A dead width has no rectangle with that side and no half-strip of
@@ -37,6 +38,10 @@ const jobCount = Number(argument("--jobs", "5"));
 const threads = Number(argument("--threads", "4"));
 const startRow = Number(argument("--start-row", "1"));
 const dryRun = process.argv.includes("--dry-run");
+const fromText = argument("--from", "");
+const from = fromText === "" ? undefined : Number(fromText);
+if (from !== undefined && (!Number.isInteger(from) || from < 0))
+  throw new Error(`--from must be a whole number, got ${fromText}`);
 if (ids.length === 0) throw new Error("--only is required");
 for (const value of [maxSide, jobCount, threads])
   if (!Number.isInteger(value) || value < 1)
@@ -60,14 +65,18 @@ const pieces: PieceState[] = ids.map((id) => {
   if (record?.status !== "open")
     throw new Error(`${id}: needs an open rectifiable record`);
   const proven = HALF_STRIP_NOTE.exec(record.note ?? "");
-  const reach = requiredLeftReach(shape);
+  const reach = requiredBuild(shape).leftReach;
   if (proven === null || Number(proven[1]) < reach - 1)
     throw new Error(
       `${id}: needs half-strips ruled out up to width ${reach - 1} first (tools/side-bounds.ts), since exact_width runs widths of at least ${reach}`,
     );
+  if (from !== undefined && (from > Number(proven[1]) || from < reach - 1))
+    throw new Error(
+      `${id}: --from ${from} must lie between ${reach - 1} and the recorded ${proven[1]}`,
+    );
   return {
     shape,
-    bound: Number(proven[1]),
+    bound: from ?? Number(proven[1]),
     stopped: false,
     dead: new Set(),
   };

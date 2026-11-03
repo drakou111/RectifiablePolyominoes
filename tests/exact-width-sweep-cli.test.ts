@@ -24,11 +24,13 @@ describe("tools/exact-width-sweep.ts", () => {
   });
 
   it(
-    "raises the 14-cell bar's bound past its recorded one in a dry run",
+    "decides widths again from --from in a dry run",
     () => {
       const result = sweep(
         "--only",
         "fcfe80",
+        "--from",
+        "58",
         "--max-side",
         "60",
         "--jobs",
