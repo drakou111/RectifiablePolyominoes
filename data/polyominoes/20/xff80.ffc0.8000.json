@@ -1,0 +1,23 @@
+{
+  "id": "xff80.ffc0.8000",
+  "properties": {
+    "rectifiable": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": true,
+      "reason": "A tiling was found."
+    },
+    "order": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": 12,
+      "reason": "Every rectangle holding fewer than 12 copies was searched exhaustively."
+    },
+    "smallestRectangles": {
+      "status": "computed",
+      "ref": "site-solver",
+      "value": [[12, 20]],
+      "reason": "Every rectangle holding 12 copies was searched exhaustively."
+    }
+  }
+}
