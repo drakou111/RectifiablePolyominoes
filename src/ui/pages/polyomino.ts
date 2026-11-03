@@ -1,4 +1,4 @@
-import type { CatalogItem } from "../../core/catalog";
+import { COMPLETE_SIZE, type CatalogItem } from "../../core/catalog";
 import {
   groupTilings,
   type TilingGroup,
@@ -380,8 +380,14 @@ function tilingGroupSection(
   );
 }
 
+function unlistedNote(item: CatalogItem): string {
+  if (item.properties.rectifiable?.value === false)
+    return "Not listed in the catalogue: like every unlisted piece of this size, it was classified as tiling no rectangle.";
+  return `Not listed in the catalogue, and not classified yet: only polyominoes with up to ${COMPLETE_SIZE} cells are.`;
+}
+
 export function polyominoPage(context: SiteContext, id: string): HTMLElement {
-  const item = context.catalog.get(id);
+  const item = context.catalog.lookup(id);
   if (item === undefined)
     return h(
       "section",
@@ -390,9 +396,8 @@ export function polyominoPage(context: SiteContext, id: string): HTMLElement {
       h(
         "p",
         {},
-        "No polyomino with ID ",
         h("code", {}, id),
-        " is listed. IDs are canonical; see ",
+        " is not a valid polyomino ID. IDs are canonical; see ",
         link("#/guide/notation", "the notation"),
         ".",
       ),
@@ -514,6 +519,7 @@ export function polyominoPage(context: SiteContext, id: string): HTMLElement {
         ),
       ),
     ),
+    !item.listed && h("p", { class: "muted" }, unlistedNote(item)),
     item.entry?.note && h("p", {}, item.entry.note),
     item.entry?.seeAlso?.length
       ? h(

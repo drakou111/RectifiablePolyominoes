@@ -1,6 +1,11 @@
 import { compareIds } from "./enumerate";
 import { deriveProperties, inferProperties } from "./derived";
-import type { PolyominoEntry, Properties, PropertyKey } from "./model";
+import type {
+  PolyominoEntry,
+  Properties,
+  PropertyKey,
+  PropertyRecord,
+} from "./model";
 import { Polyomino, type SymmetryGroup } from "./polyomino";
 
 function withInferred(properties: Properties): Properties {
@@ -49,11 +54,52 @@ export interface CatalogItem {
   readonly symmetry: SymmetryGroup;
   readonly hasHole: boolean;
   readonly tilings: readonly TilingRef[];
+  /** False for a piece built on demand by Catalog.lookup. */
+  readonly listed: boolean;
+}
+
+/** Why a classified piece missing from the catalogue tiles no rectangle. */
+export function unlistedRecord(completeSize: number): PropertyRecord<boolean> {
+  return {
+    status: "computed",
+    value: false,
+    reason: `Every polyomino with up to ${completeSize} cells was classified, and the catalogue lists all that tile a rectangle or are open. This one is not listed, so it was shown to tile no rectangle; the proof for each piece is kept in the classification record, not on this site.`,
+  };
+}
+
+function buildItem(
+  id: string,
+  polyomino: Polyomino,
+  entry: PolyominoEntry | undefined,
+  tilings: readonly TilingRef[],
+  listed: boolean,
+  extra: Properties = {},
+): CatalogItem {
+  const derived = { ...deriveProperties(polyomino), ...extra };
+  const merged = { ...derived, ...entry?.properties };
+  return {
+    id,
+    polyomino,
+    size: polyomino.size,
+    entry,
+    properties: withInferred(merged),
+    derivedKeys: new Set([
+      ...(Object.keys(derived) as PropertyKey[]),
+      ...(Object.keys(inferProperties(merged)) as PropertyKey[]),
+    ]),
+    symmetry: polyomino.symmetryGroup(),
+    hasHole: polyomino.hasHole(),
+    tilings: [...tilings].sort(
+      (a, b) => a.width * a.height - b.width * b.height,
+    ),
+    listed,
+  };
 }
 
 export class Catalog {
   readonly items: readonly CatalogItem[];
   private readonly byId: ReadonlyMap<string, CatalogItem>;
+  private readonly completeSize: number;
 
   constructor(
     entries: ReadonlyMap<string, PolyominoEntry>,
@@ -74,35 +120,54 @@ export class Catalog {
     }
 
     const items: CatalogItem[] = [];
-    for (const [id, polyomino] of shapes) {
-      const entry = entries.get(id);
-      const derived = deriveProperties(polyomino);
-      items.push({
-        id,
-        polyomino,
-        size: polyomino.size,
-        entry,
-        properties: withInferred({ ...derived, ...entry?.properties }),
-        derivedKeys: new Set([
-          ...(Object.keys(derived) as PropertyKey[]),
-          ...(Object.keys(
-            inferProperties({ ...derived, ...entry?.properties }),
-          ) as PropertyKey[]),
-        ]),
-        symmetry: polyomino.symmetryGroup(),
-        hasHole: polyomino.hasHole(),
-        tilings: (tilingsById.get(id) ?? []).sort(
-          (a, b) => a.width * a.height - b.width * b.height,
+    for (const [id, polyomino] of shapes)
+      items.push(
+        buildItem(
+          id,
+          polyomino,
+          entries.get(id),
+          tilingsById.get(id) ?? [],
+          true,
         ),
-      });
-    }
+      );
     items.sort((a, b) => a.size - b.size || compareIds(a.id, b.id));
     this.items = items;
     this.byId = new Map(items.map((item) => [item.id, item]));
+    this.completeSize = completeSize;
   }
 
   get(id: string): CatalogItem | undefined {
     return this.byId.get(id);
+  }
+
+  /**
+   * Like get, but also builds an item for a valid piece the catalogue does not list. Up to the
+   * complete size such a piece was classified as tiling no rectangle; above it nothing is known.
+   * Returns undefined for a malformed, disconnected or non-canonical ID.
+   */
+  lookup(id: string): CatalogItem | undefined {
+    const listed = this.byId.get(id);
+    if (listed !== undefined) return listed;
+    let polyomino: Polyomino;
+    try {
+      polyomino = Polyomino.fromId(id);
+    } catch {
+      // The ID comes from the address bar: a bad one gets the not-found page, not a crash.
+      return undefined;
+    }
+    if (polyomino.id !== id) return undefined;
+    const classified =
+      polyomino.size <= this.completeSize &&
+      !polyomino.hasHole() &&
+      !polyomino.isRectangle();
+    return buildItem(
+      id,
+      polyomino,
+      undefined,
+      [],
+      false,
+      classified ? { rectifiable: unlistedRecord(this.completeSize) } : {},
+    );
   }
 
   get maxSize(): number {
