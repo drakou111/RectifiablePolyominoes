@@ -11,8 +11,8 @@ const USAGE = `Raises "no rectangle with a side of at most N" for pieces whose r
 
 Usage: npx tsx tools/side-bounds.ts --only <ids> [options]
 
-  --only <ids>       comma-separated IDs (required; each needs an open rectifiable record whose
-                     note says "a side of at most N")
+  --only <ids>       comma-separated IDs (required; each needs an open rectifiable record, and
+                     a note saying "a side of at most N" sets the bound to beat)
   --max-side <n>     largest side to try (default 120)
   --budget <nodes>   native node budget per rectangle search (default 20000000000)
   --workers <n>      sides searched at once (default 8)
@@ -55,15 +55,13 @@ const pieces: PieceState[] = ids.map((id) => {
   const shape = Polyomino.fromId(id);
   const record = store.entry(shape).properties.rectifiable;
   const match = SIDE_NOTE.exec(record?.note ?? "");
-  if (record?.status !== "open" || match === null)
-    throw new Error(
-      `${id}: needs an open rectifiable record with a side bound`,
-    );
+  if (record?.status !== "open")
+    throw new Error(`${id}: needs an open rectifiable record`);
   // A half-strip clause means this tool proved the bound from side 1 already: resume after it.
   const verified = HALF_STRIP_NOTE.exec(record.note ?? "");
   return {
     shape,
-    recorded: Number(match[1]),
+    recorded: match === null ? 0 : Number(match[1]),
     bound: verified === null ? 0 : Number(verified[1]),
     stopped: false,
     ruledOut: new Set(),
