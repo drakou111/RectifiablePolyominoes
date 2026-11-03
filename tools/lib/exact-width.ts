@@ -6,12 +6,28 @@ import { PROJECT_ROOT } from "./store";
 
 const SOURCE_PATH = join(PROJECT_ROOT, "tools", "cpp", "exact_width.cpp");
 const BIN_DIR = join(PROJECT_ROOT, "tools", "cpp", "bin");
-/** Limits fixed in exact_width.cpp: rows a piece spans, and columns right of its first cell. */
-const MAX_ROWS = 7;
-const MAX_RIGHT_REACH = 6;
-const MAX_LEFT_REACH = 7;
-/** The original's default reach; narrower pieces still use it, since a build serves every reach up to its own. */
+/**
+ * The original's build (fe70's needs). Smaller pieces still use it, since a build serves every
+ * piece within its limits.
+ */
 const MIN_LEFT_REACH = 3;
+const MIN_RIGHT_REACH = 6;
+const MIN_COLUMN_BITS = 7;
+/** Limits checked by exact_width.cpp's static asserts. */
+const MAX_LEFT_REACH = 7;
+const MAX_COLUMN_BITS = 8;
+const WINDOW_BITS = 128;
+const PENDING_BITS = 64;
+
+/** The compile-time limits of one exact_width build. */
+export interface ExactWidthBuild {
+  /** Columns left of its first cell (in row-major order) any orientation reaches. */
+  readonly leftReach: number;
+  /** Columns right of its first cell any orientation reaches. */
+  readonly rightReach: number;
+  /** Rows of a transducer column: the most rows any orientation spans. */
+  readonly columnBits: number;
+}
 
 export interface ExactWidthSettings {
   readonly threads: number;
@@ -34,12 +50,14 @@ export type ExactWidthResult =
     };
 
 /**
- * How far left of its first cell (in row-major order) any orientation reaches. The program fills
- * a row's first empty cell with some piece's first cell, so this is the delay it must handle.
- * Throws when the piece is outside the program's other limits.
+ * The build a piece needs. The program fills a row's first empty cell with some piece's first
+ * cell, so the left reach is the delay it must handle, and the right reach and row count bound
+ * what one placement covers. Throws when the piece is beyond every build.
  */
-export function requiredLeftReach(polyomino: Polyomino): number {
-  let reach = 0;
+export function requiredBuild(polyomino: Polyomino): ExactWidthBuild {
+  let left = 0;
+  let right = 0;
+  let rows = 0;
   for (const o of polyomino.distinctOrientations()) {
     const cells = [...polyomino.oriented(o).cells].sort(
       (a, b) => a.y - b.y || a.x - b.x,
@@ -47,25 +65,35 @@ export function requiredLeftReach(polyomino: Polyomino): number {
     const first = cells[0];
     if (first === undefined) throw new Error(`${polyomino.id} has no cells`);
     for (const cell of cells) {
-      if (cell.y - first.y >= MAX_ROWS || cell.x - first.x > MAX_RIGHT_REACH)
-        throw new Error(
-          `${polyomino.id} spans more than ${MAX_ROWS} rows or ${MAX_RIGHT_REACH} columns right of its first cell, beyond exact_width`,
-        );
-      reach = Math.max(reach, first.x - cell.x);
+      left = Math.max(left, first.x - cell.x);
+      right = Math.max(right, cell.x - first.x);
+      rows = Math.max(rows, cell.y - first.y + 1);
     }
   }
-  if (reach > MAX_LEFT_REACH)
+  const build = {
+    leftReach: Math.max(left, MIN_LEFT_REACH),
+    rightReach: Math.max(right, MIN_RIGHT_REACH),
+    columnBits: Math.max(rows, MIN_COLUMN_BITS),
+  };
+  const { leftReach, rightReach, columnBits } = build;
+  if (
+    leftReach > MAX_LEFT_REACH ||
+    columnBits > MAX_COLUMN_BITS ||
+    (leftReach + 1 + rightReach) * columnBits > WINDOW_BITS ||
+    rightReach * columnBits > PENDING_BITS
+  )
     throw new Error(
-      `${polyomino.id} reaches ${reach} columns left, beyond exact_width's ${MAX_LEFT_REACH}`,
+      `${polyomino.id} needs ${rows} rows and reaches ${left} left / ${right} right, beyond exact_width`,
     );
-  return Math.max(reach, MIN_LEFT_REACH);
+  return build;
 }
 
-/** Compiles the build for this reach when it is missing or older than the source. */
-export function ensureExactWidth(leftReach: number): string {
+/** Compiles this build when it is missing or older than the source. */
+export function ensureExactWidth(build: ExactWidthBuild): string {
+  const { leftReach, rightReach, columnBits } = build;
   const path = join(
     BIN_DIR,
-    `exact_width_l${leftReach}${process.platform === "win32" ? ".exe" : ""}`,
+    `exact_width_l${leftReach}_r${rightReach}_c${columnBits}${process.platform === "win32" ? ".exe" : ""}`,
   );
   if (
     existsSync(path) &&
@@ -80,6 +108,8 @@ export function ensureExactWidth(leftReach: number): string {
       "-std=c++20",
       ...(process.platform === "win32" ? ["-static"] : []),
       `-DEW_LEFT_REACH=${leftReach}`,
+      `-DEW_RIGHT_REACH=${rightReach}`,
+      `-DEW_COL_BITS=${columnBits}`,
       "-o",
       path,
       SOURCE_PATH,
@@ -95,7 +125,7 @@ export function runExactWidth(
   width: number,
   settings: ExactWidthSettings,
 ): Promise<ExactWidthResult> {
-  const binary = ensureExactWidth(requiredLeftReach(polyomino));
+  const binary = ensureExactWidth(requiredBuild(polyomino));
   const cells = polyomino.cells.map((c) => `${c.x},${c.y}`).join(" ");
   const args = [
     "--width",

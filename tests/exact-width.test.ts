@@ -6,7 +6,7 @@ import { Polyomino } from "../src/core/polyomino";
 import { barPiece } from "../tools/lib/bar-family";
 import {
   parseExactWidthOutput,
-  requiredLeftReach,
+  requiredBuild,
   runExactWidth,
 } from "../tools/lib/exact-width";
 
@@ -15,6 +15,8 @@ const NATIVE_TIMEOUT_MS = 180_000;
 const FE70 = Polyomino.fromRows(["#######", ".###"]);
 const L_TETROMINO = Polyomino.fromRows(["#", "#", "##"]);
 const Y_PENTOMINO = Polyomino.fromRows(["####", ".#"]);
+const I_OCTOMINO = Polyomino.fromRows(["########"]);
+const L_OCTOMINO = Polyomino.fromRows(["#######", "#"]);
 
 const scratchDir = mkdtempSync(join(tmpdir(), "exact-width-"));
 afterAll(() => rmSync(scratchDir, { recursive: true, force: true }));
@@ -24,19 +26,35 @@ const settings = {
   scratch: join(scratchDir, "rows"),
 };
 
-describe("requiredLeftReach", () => {
-  it("finds how far left of its first cell a piece reaches", () => {
-    expect(requiredLeftReach(FE70)).toBe(3);
-    expect(requiredLeftReach(barPiece(5))).toBe(5);
-    expect(requiredLeftReach(barPiece(6))).toBe(6);
+describe("requiredBuild", () => {
+  it("finds the reach and rows each piece needs", () => {
+    expect(requiredBuild(FE70)).toEqual({
+      leftReach: 3,
+      rightReach: 6,
+      columnBits: 7,
+    });
+    expect(requiredBuild(barPiece(6))).toEqual({
+      leftReach: 6,
+      rightReach: 6,
+      columnBits: 7,
+    });
+    expect(requiredBuild(barPiece(7))).toEqual({
+      leftReach: 7,
+      rightReach: 7,
+      columnBits: 8,
+    });
   });
 
-  it("never goes below the original build's reach", () => {
-    expect(requiredLeftReach(L_TETROMINO)).toBe(3);
+  it("never goes below the original build", () => {
+    expect(requiredBuild(L_TETROMINO)).toEqual({
+      leftReach: 3,
+      rightReach: 6,
+      columnBits: 7,
+    });
   });
 
-  it("rejects a piece too tall for the program", () => {
-    expect(() => requiredLeftReach(barPiece(7))).toThrow(/7 rows/);
+  it("rejects a piece too large for any build", () => {
+    expect(() => requiredBuild(barPiece(8))).toThrow(/9 rows/);
   });
 });
 
@@ -101,6 +119,26 @@ describe("runExactWidth", () => {
       expect(await runExactWidth(barPiece(6), 40, settings)).toEqual({
         kind: "dead",
         row: 8,
+      });
+    },
+    NATIVE_TIMEOUT_MS,
+  );
+
+  it(
+    "handles pieces 8 rows tall",
+    async () => {
+      // upright straight bars side by side, and a tiling rect_tiler confirms
+      expect(await runExactWidth(I_OCTOMINO, 7, settings)).toEqual({
+        kind: "rectangle",
+        height: 8,
+      });
+      expect(await runExactWidth(L_OCTOMINO, 9, settings)).toEqual({
+        kind: "rectangle",
+        height: 16,
+      });
+      expect(await runExactWidth(barPiece(7), 40, settings)).toEqual({
+        kind: "dead",
+        row: 17,
       });
     },
     NATIVE_TIMEOUT_MS,

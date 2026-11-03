@@ -4,7 +4,9 @@
 //
 // Copied from tiling-volunteer native/exact_width.cpp (commit 9b60511). The only change: how far a piece
 // reaches left of its first cell is a compile-time setting (-DEW_LEFT_REACH=N, default 3 as for fe70), and
-// a transducer state packs its window to fit. The 14-cell bar fcfe80 needs 6.
+// a transducer state packs its window to fit. The 14-cell bar fcfe80 needs 6. The right reach
+// (-DEW_RIGHT_REACH, default 6) and the rows of a column (-DEW_COL_BITS, 7 or 8, default 7) are
+// settings too, so the 16-cell bar feff80 (8 rows, reach 7 each way) fits.
 //
 // Row r's language is the set of frontiers (6 rows of occupancy per column) left by fillings of the first
 // r rows of the width-W half-strip, as a minimal acyclic DFA. The run ends when the language is empty (no
@@ -106,14 +108,24 @@ template <class T>
 using BigVector = std::vector<T, PageAllocator<T>>;
 
 using Cell = std::pair<int, int>;  // (row, col)
-constexpr int SYMBOLS = 64;        // 6 rows of occupancy per column
 #ifndef EW_LEFT_REACH
 #define EW_LEFT_REACH 3
 #endif
-constexpr int LEFT_REACH = EW_LEFT_REACH;  // a piece anchored at column c touches columns >= c-LEFT_REACH
-constexpr int RIGHT_REACH = 6;     // ... and <= c+6
-constexpr int COL_BITS = 7;        // rows r..r+6 inside the transducer
+#ifndef EW_RIGHT_REACH
+#define EW_RIGHT_REACH 6
+#endif
+#ifndef EW_COL_BITS
+#define EW_COL_BITS 7
+#endif
+constexpr int LEFT_REACH = EW_LEFT_REACH;    // a piece anchored at column c touches columns >= c-LEFT_REACH
+constexpr int RIGHT_REACH = EW_RIGHT_REACH;  // ... and <= c+RIGHT_REACH
+constexpr int COL_BITS = EW_COL_BITS;        // rows r..r+COL_BITS-1 inside the transducer
+constexpr int FRONTIER_ROWS = COL_BITS - 1;  // rows of occupancy per column in a frontier
+constexpr int SYMBOLS = 1 << FRONTIER_ROWS;
+constexpr uint32_t COL_MASK = (1u << COL_BITS) - 1;
 static_assert(LEFT_REACH >= 1 && LEFT_REACH <= 7, "the left reach must fit the 3-bit wall counter");
+static_assert(COL_BITS >= 7 && COL_BITS <= 8, "symbols are stored in 7 or 8 bits");
+static_assert(RIGHT_REACH * COL_BITS <= 64, "pending columns must fit 64 bits");
 static_assert((LEFT_REACH + 1 + RIGHT_REACH) * COL_BITS <= 128, "the transducer window must fit 128 bits");
 constexpr int MAX_ROWS = COL_BITS;
 constexpr int32_t FLUSH_BASE = -2;  // NFA state q = -2 - k: the end flush with k columns emitted
@@ -169,8 +181,8 @@ std::vector<Orientation> orientationsOf(const std::vector<Cell>& base) {
         for (auto& c : o) {
             int dr = c.first - o[0].first, dc = c.second - o[0].second;
             if (dr >= MAX_ROWS || dc < -LEFT_REACH || dc > RIGHT_REACH)
-                fail("the piece must fit in 7 rows and " + std::to_string(LEFT_REACH) +
-                     " columns left / 6 right of its first cell (rebuild with a larger -DEW_LEFT_REACH)");
+                fail("the piece must fit in " + std::to_string(MAX_ROWS) + " rows and " + std::to_string(LEFT_REACH) + " columns left / " +
+                     std::to_string(RIGHT_REACH) + " right of its first cell (rebuild with larger -DEW_COL_BITS, -DEW_LEFT_REACH or -DEW_RIGHT_REACH)");
             ori.cells.push_back({dr, dc});
             ori.minDc = std::min(ori.minDc, dc);
             ori.mask |= (Window)1 << (COL_BITS * (LEFT_REACH + dc) + dr);
@@ -195,36 +207,56 @@ struct Dfa {
 constexpr int CAP_BITS = 3;
 constexpr int WIN_BITS = LEFT_REACH * COL_BITS;
 constexpr int PEND_BITS = RIGHT_REACH * COL_BITS;
-static_assert(CAP_BITS + WIN_BITS + PEND_BITS <= 96, "a transducer state's window must fit 96 bits");
+constexpr bool WIDE_STATE = CAP_BITS + WIN_BITS + PEND_BITS > 96;
+static_assert(CAP_BITS + WIN_BITS + PEND_BITS <= 128, "a transducer state's window must fit 128 bits");
 struct NState {
     int32_t q;
     uint32_t lo;  // bits 0..31 of cap | win << CAP_BITS | pend << (CAP_BITS + WIN_BITS)
     uint64_t hi;  // bits 32..95
+#if 3 + (EW_LEFT_REACH + EW_RIGHT_REACH) * EW_COL_BITS > 96
+    uint32_t top = 0;  // bits 96..127
+#endif
     NState() = default;
     NState(int32_t q, uint32_t cap, uint64_t win, uint64_t pend) : q(q) {
         const unsigned __int128 packed =
             (unsigned __int128)cap | (unsigned __int128)win << CAP_BITS | (unsigned __int128)pend << (CAP_BITS + WIN_BITS);
         lo = (uint32_t)packed;
         hi = (uint64_t)(packed >> 32);
+#if 3 + (EW_LEFT_REACH + EW_RIGHT_REACH) * EW_COL_BITS > 96
+        top = (uint32_t)(packed >> 96);
+#endif
     }
-    unsigned __int128 packed() const { return (unsigned __int128)hi << 32 | lo; }
+    unsigned __int128 packed() const {
+#if 3 + (EW_LEFT_REACH + EW_RIGHT_REACH) * EW_COL_BITS > 96
+        return (unsigned __int128)top << 96 | (unsigned __int128)hi << 32 | lo;
+#else
+        return (unsigned __int128)hi << 32 | lo;
+#endif
+    }
+    uint32_t topBits() const {
+#if 3 + (EW_LEFT_REACH + EW_RIGHT_REACH) * EW_COL_BITS > 96
+        return top;
+#else
+        return 0;
+#endif
+    }
     uint32_t cap() const { return lo & ((1u << CAP_BITS) - 1); }
     uint64_t win() const { return (uint64_t)(packed() >> CAP_BITS) & ((1ULL << WIN_BITS) - 1); }
     uint64_t pend() const { return (uint64_t)(packed() >> (CAP_BITS + WIN_BITS)); }
-    bool operator==(const NState& o) const { return q == o.q && lo == o.lo && hi == o.hi; }
+    bool operator==(const NState& o) const { return q == o.q && lo == o.lo && hi == o.hi && topBits() == o.topBits(); }
 };
-static_assert(sizeof(NState) == 16, "a transducer state should pack into 16 bytes");
+static_assert(sizeof(NState) == (WIDE_STATE ? 24 : 16), "a transducer state should pack into 16 or 24 bytes");
 struct NStateHash {
     size_t operator()(const NState& s) const {
         uint64_t h = (uint64_t)(uint32_t)s.q * 0x9E3779B97F4A7C15ULL ^ ((uint64_t)s.lo | s.hi << 32);
-        h ^= (s.hi >> 32) + 0x9E3779B97F4A7C15ULL + (h << 6) + (h >> 2);
+        h ^= ((s.hi >> 32) | (uint64_t)s.topBits() << 32) + 0x9E3779B97F4A7C15ULL + (h << 6) + (h >> 2);
         h *= 0xBF58476D1CE4E5B9ULL;
         h ^= h >> 31;
         return h;
     }
 };
 
-inline uint32_t colOf(uint64_t packed, int i) { return (packed >> (i * COL_BITS)) & 0x7F; }
+inline uint32_t colOf(uint64_t packed, int i) { return (packed >> (i * COL_BITS)) & COL_MASK; }
 
 // Every way to consume input column x in state s: (output symbol or -1, next state). `nq` is the input
 // automaton's state after x.
@@ -239,7 +271,7 @@ void stepColumn(const std::vector<Orientation>& oris, const NState& s, int x, in
     auto emit = [&](Window c) {
         NState n(nq, (uint32_t)std::min((int)cap + 1, LEFT_REACH), (uint64_t)(c >> COL_BITS) & ((1ULL << WIN_BITS) - 1),
                  (uint64_t)(c >> (CUR + COL_BITS)) & ((1ULL << PEND_BITS) - 1));
-        out.push_back({cap == LEFT_REACH ? (int)(((uint32_t)c & 0x7F) >> 1) : -1, n});
+        out.push_back({cap == LEFT_REACH ? (int)(((uint32_t)c & COL_MASK) >> 1) : -1, n});
     };
     if ((cols >> CUR) & 1) { emit(cols); return; }
     for (auto& o : oris) {
@@ -255,7 +287,7 @@ void flushStep(const NState& s, bool inputAccepts, std::vector<std::pair<int, NS
         if (inputAccepts && s.pend() == 0 && s.cap() == LEFT_REACH) {
             NState f = s;
             f.q = FLUSH_BASE - 1;
-            out.push_back({(int)((s.win() & 0x7F) >> 1), f});
+            out.push_back({(int)((s.win() & COL_MASK) >> 1), f});
         }
         return;
     }
@@ -263,7 +295,7 @@ void flushStep(const NState& s, bool inputAccepts, std::vector<std::pair<int, NS
     if (k < LEFT_REACH) {
         NState f = s;
         f.q = FLUSH_BASE - (k + 1);
-        out.push_back({(int)(((s.win() >> (k * COL_BITS)) & 0x7F) >> 1), f});
+        out.push_back({(int)(((s.win() >> (k * COL_BITS)) & COL_MASK) >> 1), f});
     }
 }
 
@@ -1064,7 +1096,7 @@ public:
         for (const Info& l : layers) e += l.edges;
         return e;
     }
-    uint64_t symbolsUsed() const { return symbols; }  // bit s: some edge reads symbol s
+    unsigned __int128 symbolsUsed() const { return symbols; }  // bit s: some edge reads symbol s
 
     void put(size_t d, const uint8_t* acc, const uint32_t* off, const uint8_t* sym, const int32_t* tgt, uint64_t n) {
         const uint64_t e = off[n];
@@ -1075,7 +1107,7 @@ public:
         writeAll(f, off, 4 * (n + 1), "row automaton");
         writeAll(f, sym, e, "row automaton");
         writeAll(f, tgt, 4 * e, "row automaton");
-        for (uint64_t x = 0; x < e; x++) symbols |= 1ULL << sym[x];
+        for (uint64_t x = 0; x < e; x++) symbols |= (unsigned __int128)1 << sym[x];
     }
     void put(size_t d, const Layer& l) { put(d, l.acc.data(), l.off.data(), l.sym.data(), l.tgt.data(), l.size()); }
 
@@ -1118,7 +1150,7 @@ private:
     FILE* f = nullptr;
     std::string path;
     std::vector<Info> layers;
-    uint64_t symbols = 0;
+    unsigned __int128 symbols = 0;
 
     void take(LayeredDfa& o) {
         f = o.f;
@@ -1165,7 +1197,7 @@ LayeredDfa toLayered(const SDfa& s, std::string file) {
 
 // The words Lookahead::keep() keeps, as a minimal DFA over a small frontier alphabet (Lookahead::buildFilter).
 struct WindowFilter {
-    std::array<int8_t, 64> index;  // symbol -> letter, -1 outside the alphabet
+    std::array<int8_t, SYMBOLS> index;  // symbol -> letter, -1 outside the alphabet
     int m = 0;
     std::vector<int32_t> next;  // state * m + letter
     std::vector<uint8_t> acc;
@@ -1896,7 +1928,7 @@ bool sameLanguage(const LayeredDfa& a, const LayeredDfa& b) {
 // set means the width dies within k rows (the exact death row is then found by stepping the full set).
 // On small widths 7-column windows catch 99-100% of the frontiers that die within 1-3 rows.
 constexpr int WINDOW_COLS = 7;
-constexpr int WINDOW_MARGIN = 6;  // a piece reaches at most 6 columns from any of its cells
+constexpr int WINDOW_MARGIN = RIGHT_REACH;  // a piece is at most RIGHT_REACH + 1 columns wide
 
 class Lookahead {
 public:
@@ -1918,7 +1950,7 @@ public:
         if (rows == 0) return d;
         if (W > WINDOW_COLS && filterCovers(d, workers)) return keepFiltered(d, W, files, workers);
         const int w = std::min(WINDOW_COLS, W);
-        const uint64_t mask = w > 1 ? (1ULL << (6 * (w - 1))) - 1 : 0;
+        const uint64_t mask = w > 1 ? (1ULL << (FRONTIER_ROWS * (w - 1))) - 1 : 0;
         DiskSink sink;
         const std::string raw = files.fresh();
         sink.f = fopen(raw.c_str(), "w+b");
@@ -1940,7 +1972,7 @@ public:
                         const WindowKey& key = layer[i];
                         uint8_t degree = 0;
                         for (uint32_t x = in.off[key.v]; x < in.off[key.v + 1]; x++) {
-                            uint64_t window = key.hist << 6 | in.sym[x];
+                            uint64_t window = key.hist << FRONTIER_ROWS | in.sym[x];
                             // the window of columns pos-w+1..pos, complete once w columns are read
                             if (pos + 1 >= w && bad(window, w, pos + 1 == w, pos + 1 == W, cache)) continue;
                             o.sym.push_back(in.sym[x]);
@@ -2020,16 +2052,16 @@ private:
     // Whether a filter covering d's symbols exists, building (or widening) it when that alphabet is small
     // enough. The kept sets are the same either way; the filter only makes keep() faster and smaller.
     bool filterCovers(const LayeredDfa& d, Workers& workers) const {
-        std::array<char, 64> used{};
-        for (int s = 0; s < 64; s++) used[s] = (char)(d.symbolsUsed() >> s & 1);
+        std::array<char, SYMBOLS> used{};
+        for (int s = 0; s < SYMBOLS; s++) used[s] = (char)(d.symbolsUsed() >> s & 1);
         if (filter) {
             bool covered = true;
-            for (int s = 0; s < 64; s++) if (used[s] && filter->index[s] < 0) covered = false;
+            for (int s = 0; s < SYMBOLS; s++) if (used[s] && filter->index[s] < 0) covered = false;
             if (covered) return true;
-            for (int s = 0; s < 64; s++) if (filter->index[s] >= 0) used[s] = 1;
+            for (int s = 0; s < SYMBOLS; s++) if (filter->index[s] >= 0) used[s] = 1;
         }
         std::vector<int> alphabet;
-        for (int s = 0; s < 64; s++) if (used[s]) alphabet.push_back(s);
+        for (int s = 0; s < SYMBOLS; s++) if (used[s]) alphabet.push_back(s);
         if (alphabet.size() > MAX_FILTER_ALPHABET) return false;
         auto t = std::chrono::steady_clock::now();
         buildFilter(alphabet, workers);
@@ -2056,7 +2088,7 @@ private:
                 uint64_t window = 0, rest = i;
                 std::array<int, WINDOW_COLS> digit{};
                 for (int c = w - 1; c >= 0; c--) { digit[c] = (int)(rest % m); rest /= m; }
-                for (int c = 0; c < w; c++) window = window << 6 | (uint64_t)alphabet[digit[c]];
+                for (int c = 0; c < w; c++) window = window << FRONTIER_ROWS | (uint64_t)alphabet[digit[c]];
                 uint8_t v = 0;
                 if (badUncached(window, w, false, false)) v |= BAD_NONE;
                 if (badUncached(window, w, true, false)) v |= BAD_LEFT;
@@ -2174,8 +2206,8 @@ private:
         area.left = leftWall ? 0 : WINDOW_MARGIN;
         area.w = w;
         area.width = area.left + w + (rightWall ? 0 : WINDOW_MARGIN);
-        area.height = 6 + rows;  // cells above the k rows can hold the pieces that cover them
-        for (int c = 0; c < w; c++) area.cols[area.left + c] = (window >> (6 * (w - 1 - c))) & 63;
+        area.height = FRONTIER_ROWS + rows;  // cells above the k rows can hold the pieces that cover them
+        for (int c = 0; c < w; c++) area.cols[area.left + c] = (window >> (FRONTIER_ROWS * (w - 1 - c))) & (SYMBOLS - 1);
         return !fill(area, 0);
     }
 
