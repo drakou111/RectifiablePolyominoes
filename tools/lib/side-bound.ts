@@ -1,5 +1,7 @@
+import type { PropertyRecord } from "../../src/core/model";
 import type { Polyomino } from "../../src/core/polyomino";
 import { tileRectangleNative, type NativeResult } from "./native-tiler";
+import type { DataStore } from "./store";
 
 /** Width of the first, long run: far enough that a wall-free exhaustion covers most widths. */
 const MIN_PROBE_WIDTH = 400;
@@ -62,4 +64,35 @@ export async function ruleOutSide(
       return { kind: "undecided", why: `budget at ${side}x${width}` };
   }
   return { kind: "ruled-out", longestChecked: safe };
+}
+
+/** Note phrases a later run reads back: the bound to beat, and the bound proven from side 1 up. */
+export const SIDE_NOTE = /a side of at most (\d+)/;
+export const HALF_STRIP_NOTE = /every half-strip of width at most (\d+)/;
+
+/**
+ * Saves "no rectangle with a side of at most `bound`, and no half-strip of width at most
+ * `bound`" as the open rectifiable record's note, and raises the open order's lower bound that
+ * follows: both sides of a tileable rectangle exceed `bound`.
+ */
+export function recordSideBound(
+  store: DataStore,
+  shape: Polyomino,
+  bound: number,
+  method: string,
+): void {
+  const properties = store.entry(shape).properties;
+  const rectifiable = properties.rectifiable as PropertyRecord<boolean>;
+  const note = `Not resolved by this site's searches. ${method} rule out every rectangle with a side of at most ${bound}, and every half-strip of width at most ${bound}.`;
+  store.replaceOpen(shape, "rectifiable", { ...rectifiable, note });
+  const order = properties.order as PropertyRecord<number> | undefined;
+  const fromSides = Math.ceil(((bound + 1) * (bound + 1)) / shape.size);
+  if (order?.status === "open" && (order.lower ?? 0) < fromSides)
+    store.replaceOpen(shape, "order", {
+      status: "open",
+      lower: fromSides,
+      ref: "site-solver",
+      note: `Every tileable rectangle has both sides above ${bound}, so it holds at least ${fromSides} copies; the piece may not tile any rectangle.`,
+    });
+  store.save();
 }

@@ -1,10 +1,14 @@
 import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import type { PropertyRecord } from "../src/core/model";
 import { Polyomino } from "../src/core/polyomino";
 import { expandTiling } from "../src/core/tiling";
 import { ensureNativeTiler } from "./lib/native-tiler";
-import { ruleOutSide } from "./lib/side-bound";
+import {
+  HALF_STRIP_NOTE,
+  SIDE_NOTE,
+  recordSideBound,
+  ruleOutSide,
+} from "./lib/side-bound";
 import { DataStore, PROJECT_ROOT, printHelpIfAsked } from "./lib/store";
 
 const USAGE = `Raises "no rectangle with a side of at most N" for pieces whose rectifiability is open.
@@ -22,9 +26,6 @@ widths up to the bound; a later run resumes after a bound whose note already has
 past the column it reached (and the half-strip of width s), and the narrower widths are searched
 one by one (tools/lib/side-bound.ts). The bound moves up over contiguous ruled-out sides and is
 saved once it passes the recorded bound, with the order's lower bound that follows from it. Log: output/side-bounds/run.log.`;
-
-const SIDE_NOTE = /a side of at most (\d+)/;
-const HALF_STRIP_NOTE = /every half-strip of width at most (\d+)/;
 
 function argument(name: string, fallback: string): string {
   const index = process.argv.indexOf(name);
@@ -79,28 +80,9 @@ log(
   `# ${new Date().toISOString()} ${JSON.stringify({ ids, maxSide, budget, workers })}`,
 );
 
-/** The rectifiable note this tool writes; the two numbers are how a later run resumes. */
-function sideBoundNote(bound: number): string {
-  return `Not resolved by this site's searches. Exact column searches rule out every rectangle with a side of at most ${bound}, and every half-strip of width at most ${bound}.`;
-}
-
 function saveBound(piece: PieceState): void {
-  const { shape, bound } = piece;
-  const properties = store.entry(shape).properties;
-  const rectifiable = properties.rectifiable as PropertyRecord<boolean>;
-  const note = sideBoundNote(bound);
-  store.replaceOpen(shape, "rectifiable", { ...rectifiable, note });
-  const order = properties.order as PropertyRecord<number> | undefined;
-  const fromSides = Math.ceil(((bound + 1) * (bound + 1)) / shape.size);
-  if (order?.status === "open" && (order.lower ?? 0) < fromSides)
-    store.replaceOpen(shape, "order", {
-      status: "open",
-      lower: fromSides,
-      ref: "site-solver",
-      note: `Every tileable rectangle has both sides above ${bound}, so it holds at least ${fromSides} copies; the piece may not tile any rectangle.`,
-    });
-  store.save();
-  log(`${shape.id}: bound ${bound}`);
+  recordSideBound(store, piece.shape, piece.bound, "Exact column searches");
+  log(`${piece.shape.id}: bound ${piece.bound}`);
 }
 
 const jobs: { piece: PieceState; side: number }[] = [];
