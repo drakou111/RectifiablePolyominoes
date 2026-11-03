@@ -1,0 +1,11 @@
+{
+  "id": "xfffe.ffff.8000",
+  "note": "One of the bar pieces: a row of n cells on a row of n + 1, with one cell under the left end. Every n = 1 (mod 4) gives a 2(n+1) x (n+3) tiling with n + 3 copies (tools/bar-family.ts). Other lengths behave very differently: n = 3 needs 180 copies, n = 4 needs 138 and n = 8 needs 468, while n = 6 and 7 are open.",
+  "properties": {
+    "rectifiable": {
+      "status": "open",
+      "ref": "site-solver",
+      "note": "Not resolved by this site's searches."
+    }
+  }
+}
