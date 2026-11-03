@@ -31,7 +31,7 @@ Usage: npx tsx tools/solve.ts [options]
   --band-height <h>  largest band height of the strip sweep (default 8)
   --max-states <n>   state limit of one strip sweep (default 2000000)
   --workers <n>      worker threads (default: all cores)
-  --only <ids>       comma-separated IDs: process just these pieces
+  --only <ids>       comma-separated IDs: process just these pieces (any size)
   --verify           compare with existing data instead of writing; reports disagreements
   --dry-run          compute and report, write nothing
 
@@ -42,6 +42,16 @@ A run summary is saved to output/solve/.`;
 function argument(name: string, fallback: string): string {
   const index = process.argv.indexOf(name);
   return index === -1 ? fallback : (process.argv[index + 1] ?? fallback);
+}
+
+/** A piece named by --only, built from its ID so no enumeration is needed. */
+function onlyPiece(id: string): Polyomino {
+  const shape = Polyomino.fromId(id);
+  if (shape.canonical().id !== id)
+    throw new Error(
+      `--only ${id} is not a canonical ID; use ${shape.canonical().id}`,
+    );
+  return shape;
 }
 
 printHelpIfAsked(USAGE);
@@ -74,12 +84,17 @@ for (const [name, value] of Object.entries({
       `--${name} must be a positive integer, got ${String(value)}`,
     );
 
-const only = new Set(argument("--only", "").split(",").filter(Boolean));
+const only = argument("--only", "").split(",").filter(Boolean);
+const candidates =
+  only.length === 0
+    ? enumerateFreePolyominoes(maxSize)
+        .flat()
+        .filter((shape) => shape.size >= minSize)
+    : only.map(onlyPiece);
 const store = new DataStore();
 const jobs: SolveJob[] = [];
-for (const shape of enumerateFreePolyominoes(maxSize).flat()) {
-  if (shape.size < minSize || shape.hasHole() || shape.isRectangle()) continue;
-  if (only.size > 0 && !only.has(shape.id)) continue;
+for (const shape of candidates) {
+  if (shape.hasHole() || shape.isRectangle()) continue;
   const entry = store.entry(shape);
   const rectifiable = entry.properties.rectifiable?.value;
   const order = entry.properties.order;
