@@ -7,14 +7,17 @@ import { DATA_DIR, DataStore, printHelpIfAsked } from "./lib/store";
 
 const USAGE = `Adds bar pieces (a row of n cells on a row of n + 1, one cell under the left end) to data/.
 
-Usage: npx tsx tools/bar-family.ts --n <list> [--dry-run]
+Usage: npx tsx tools/bar-family.ts --n <list> [--add-open] [--dry-run]
 
   --n <list>   comma-separated bar lengths, e.g. 5,9,13,21
+  --add-open   give other lengths without an entry an open one, so tools such as
+               side-bounds.ts can work on them
   --dry-run    report only
 
 For n = 1 (mod 4) the piece is entered as tiling a 2(n+1) x (n+3) rectangle with n + 3 copies,
 which bounds its order, and that tiling is stored unless the piece already has one. Every listed
-piece that has an entry gets the family note. Other n without an entry are skipped.`;
+piece that has an entry gets the family note. Other n without an entry are skipped unless
+--add-open is given.`;
 
 function argument(name: string): string | undefined {
   const index = process.argv.indexOf(name);
@@ -26,15 +29,29 @@ const list = argument("--n");
 if (list === undefined) throw new Error("--n is required, e.g. --n 5,9,13");
 const lengths = list.split(",").map(Number);
 const dryRun = process.argv.includes("--dry-run");
+const addOpen = process.argv.includes("--add-open");
 
 const store = new DataStore();
 for (const n of lengths) {
   const shape = barPiece(n);
   const hasEntry = existsSync(store.entryPath(shape));
   if (n % 4 !== 1) {
-    if (!hasEntry) {
+    if (!hasEntry && !addOpen) {
       console.log(`n=${n} ${shape.id}: no entry and no construction, skipped`);
       continue;
+    }
+    if (!hasEntry) {
+      store.setProperty(
+        shape,
+        "rectifiable",
+        {
+          status: "open",
+          ref: SOLVER_REF,
+          note: "Not resolved by this site's searches.",
+        } as PropertyRecord<unknown>,
+        "bar-family",
+      );
+      console.log(`n=${n} ${shape.id} (${shape.size} cells): open entry added`);
     }
     console.log(
       `n=${n} ${shape.id}: ${store.setNote(shape, BAR_FAMILY_NOTE) ? "family note set" : "has a different note, left alone"}`,

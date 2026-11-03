@@ -50,7 +50,7 @@ describe("tools/bar-family.ts", () => {
           join("node_modules", "tsx", "dist", "cli.mjs"),
           "tools/bar-family.ts",
           "--n",
-          "9,8,10",
+          "9,8,22",
           "--dry-run",
         ],
         { encoding: "utf8" },
@@ -60,8 +60,30 @@ describe("tools/bar-family.ts", () => {
         /n=9 xff80.ffc0.8000 \(20 cells\): 20 x 12 with 12 copies, tiling already stored/,
       );
       expect(result.stdout).toMatch(/n=8 xff00.ff80.8000: family note set/);
-      expect(result.stdout).toMatch(/n=10 .*no entry and no construction/);
+      expect(result.stdout).toMatch(/n=22 .*no entry and no construction/);
       expect(result.stdout).toMatch(/dry run, nothing written/);
+    },
+    CLI_TIMEOUT_MS,
+  );
+
+  it(
+    "adds an open entry for another length with --add-open",
+    () => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          join("node_modules", "tsx", "dist", "cli.mjs"),
+          "tools/bar-family.ts",
+          "--n",
+          "30",
+          "--add-open",
+          "--dry-run",
+        ],
+        { encoding: "utf8" },
+      );
+      expect(result.status, result.stderr).toBe(0);
+      expect(result.stdout).toMatch(/n=30 .*\(62 cells\): open entry added/);
+      expect(result.stdout).toMatch(/family note set/);
     },
     CLI_TIMEOUT_MS,
   );
