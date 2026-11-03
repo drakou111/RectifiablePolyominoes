@@ -5,7 +5,7 @@
     "rectifiable": {
       "status": "open",
       "ref": "site-solver",
-      "note": "Not resolved by this site's searches."
+      "note": "Not resolved by this site's searches. Exact column searches rule out every rectangle with a side of at most 50, and every half-strip of width at most 50."
     }
   }
 }
