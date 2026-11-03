@@ -5,13 +5,13 @@
     "rectifiable": {
       "status": "open",
       "ref": "site-solver",
-      "note": "Not resolved by this site's searches. Exact searches (column searches, then exact width automata from tools/exact-width-sweep.ts) rule out every rectangle with a side of at most 169, and every half-strip of width at most 169."
+      "note": "Not resolved by this site's searches. Exact searches (column searches, then exact width automata from tools/exact-width-sweep.ts) rule out every rectangle with a side of at most 209, and every half-strip of width at most 209."
     },
     "order": {
       "status": "open",
-      "lower": 1807,
+      "lower": 2757,
       "ref": "site-solver",
-      "note": "Every tileable rectangle has both sides above 169, so it holds at least 1807 copies; the piece may not tile any rectangle."
+      "note": "Every tileable rectangle has both sides above 209, so it holds at least 2757 copies; the piece may not tile any rectangle."
     }
   }
 }
