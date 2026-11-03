@@ -82,6 +82,16 @@ export class DataStore {
     this.dirty.add(polyomino.id);
   }
 
+  /** Sets the entry's note. Returns false, leaving it alone, if a different note is present. */
+  setNote(polyomino: Polyomino, note: string): boolean {
+    const entry = this.entry(polyomino);
+    if (entry.note === note) return true;
+    if (entry.note !== undefined) return false;
+    entry.note = note;
+    this.dirty.add(polyomino.id);
+    return true;
+  }
+
   /** Sets a property unless one is already present. Differing settled values become conflicts. */
   setProperty(
     polyomino: Polyomino,
