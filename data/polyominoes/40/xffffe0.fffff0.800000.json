@@ -5,7 +5,7 @@
     "rectifiable": {
       "status": "open",
       "ref": "site-solver",
-      "note": "Not resolved by this site's searches. Exact column searches rule out every rectangle with a side of at most 47, and every half-strip of width at most 47."
+      "note": "Not resolved by this site's searches. Exact column searches rule out every rectangle with a side of at most 51, and every half-strip of width at most 51."
     }
   }
 }
