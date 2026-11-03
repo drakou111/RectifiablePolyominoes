@@ -1,0 +1,24 @@
+{
+  "width": 28,
+  "height": 16,
+  "ref": "site-solver",
+  "note": "Found by the strip sweep (tools/solve.ts): the narrowest rectangle height that can be tiled is 16.",
+  "placements": [
+    { "o": 0, "x": 0, "y": 0 },
+    { "o": 3, "x": 0, "y": 2 },
+    { "o": 5, "x": 2, "y": 2 },
+    { "o": 3, "x": 4, "y": 2 },
+    { "o": 5, "x": 6, "y": 2 },
+    { "o": 3, "x": 8, "y": 2 },
+    { "o": 5, "x": 10, "y": 2 },
+    { "o": 3, "x": 12, "y": 2 },
+    { "o": 1, "x": 13, "y": 0 },
+    { "o": 2, "x": 14, "y": 13 },
+    { "o": 7, "x": 15, "y": 0 },
+    { "o": 1, "x": 17, "y": 0 },
+    { "o": 7, "x": 19, "y": 0 },
+    { "o": 1, "x": 21, "y": 0 },
+    { "o": 7, "x": 23, "y": 0 },
+    { "o": 1, "x": 25, "y": 0 }
+  ]
+}
