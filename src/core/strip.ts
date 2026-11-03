@@ -124,6 +124,9 @@ interface StoredState {
   readonly placed: Placement[] | undefined;
 }
 
+/** A JS Map holds at most 2^24 entries; the sweep keeps every state in one. */
+export const MAX_STRIP_STATES = 16_000_000;
+
 export function sweepStrip(
   polyomino: Polyomino,
   height: number,
@@ -135,6 +138,10 @@ export function sweepStrip(
   const reach = Math.max(polyomino.width, polyomino.height);
   const full = (1 << height) - 1;
   if (height > 30) throw new Error("band height above 30 is not supported");
+  if (maxStates > MAX_STRIP_STATES)
+    throw new Error(
+      `a state limit of ${maxStates} exceeds what one Map holds (at most ${MAX_STRIP_STATES})`,
+    );
 
   // Key: columns c..c+reach-1 as char codes, plus min(c, reach) for the left wall.
   const encode = (masks: Int32Array, column: number): string =>

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Polyomino } from "../src/core/polyomino";
 import {
   halfStripProof,
+  MAX_STRIP_STATES,
   stripProof,
   stripStateKey,
   sweepStrip,
@@ -11,6 +12,12 @@ import { expandTiling } from "../src/core/tiling";
 const MAX_STATES = 1_000_000;
 
 describe("sweepStrip", () => {
+  it("rejects a state limit larger than one Map can hold", () => {
+    expect(() =>
+      sweepStrip(Polyomino.fromId("e080"), 2, true, MAX_STRIP_STATES + 1),
+    ).toThrow(/exceeds what one Map holds/);
+  });
+
   it("finds the 2 x 4 rectangle of the L tetromino", () => {
     const l = Polyomino.fromId("e080");
     const result = sweepStrip(l, 2, true, MAX_STATES);
